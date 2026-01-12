@@ -71,6 +71,52 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-SSH" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/01/13/SSH/" class="article-date">
+  <time class="dt-published" datetime="2026-01-12T16:06:48.000Z" itemprop="datePublished">2026-01-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2026/01/13/SSH/">SSH</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h3 id="ssh服务"><a href="#ssh服务" class="headerlink" title="ssh服务"></a>ssh服务</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">观察是否开启</span><br><span class="line">[root@backup ~]#systemctl status sshd</span><br><span class="line">[root@backup ~]#netstat -tnulp <span class="comment">##ssh默认22端口</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">修改ssh服务内容</span><br><span class="line">[root@backup ~]#vim /etc/ssh/sshd_config</span><br><span class="line">..</span><br><span class="line">Port 22 <span class="comment">#可以进行修改</span></span><br><span class="line">..</span><br><span class="line">重启生效</span><br><span class="line">[root@backup ~]#systemctl restart sshd</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">使用方法</span><br><span class="line">ssh 10.0.0.41 “命令”</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="ssh配置"><a href="#ssh配置" class="headerlink" title="ssh配置"></a>ssh配置</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">第一步: 生成密钥对 、一路回车</span><br><span class="line">[root@backup ~]#ssh-keygen</span><br><span class="line"></span><br><span class="line">查看生成的密钥对</span><br><span class="line">[root@backup ~]#ll .ssh/</span><br><span class="line">total 12</span><br><span class="line">-rw------- 1 root root 2602 Dec  1 11:36 id_rsa			<span class="comment"># 私钥</span></span><br><span class="line">-rw-r--r-- 1 root root  565 Dec  1 11:36 id_rsa.pub		<span class="comment"># 公钥</span></span><br><span class="line"></span><br><span class="line">第二步: 将公钥拷贝到目标主机31</span><br><span class="line">[root@backup ~]#ssh-copy-id 172.16.1.31</span><br><span class="line"></span><br><span class="line"><span class="comment">#查看目标主机的公钥</span></span><br><span class="line">[root@nfs ~]#ll .ssh/</span><br><span class="line">total 8</span><br><span class="line">-rw------- 1 root root 565 Dec  1 11:39 authorized_keys##产生的公钥文件</span><br><span class="line">-rw-r--r-- 1 root root 358 Dec  1 11:21 known_hosts##记录</span><br></pre></td></tr></table></figure>
+
+
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/01/13/SSH/" data-id="cuidFKpx6_t6KbC8Xr1uFJox5" data-title="SSH" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-rsync案例" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2026/01/12/rsync%E6%A1%88%E4%BE%8B/" class="article-date">
@@ -293,6 +339,10 @@
     <h3 class="widget-title">最新文章</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2026/01/13/SSH/">SSH</a>
+          </li>
         
           <li>
             <a href="/2026/01/12/rsync%E6%A1%88%E4%BE%8B/">rsync案例</a>
