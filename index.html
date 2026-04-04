@@ -71,6 +71,190 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-tomcat-1" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/04/05/tomcat-1/" class="article-date">
+  <time class="dt-published" datetime="2026-04-04T19:42:54.000Z" itemprop="datePublished">2026-04-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2026/04/05/tomcat-1/">tomcat</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/04/05/tomcat-1/" data-id="cuidXVcEvHHtqwwc_-kPBjQkr" data-title="tomcat" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-tomcat" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/04/05/tomcat/" class="article-date">
+  <time class="dt-published" datetime="2026-04-04T19:41:44.000Z" itemprop="datePublished">2026-04-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2026/04/05/tomcat/">tomcat</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="从零搞定-Tomcat：部署、配置与排错指南"><a href="#从零搞定-Tomcat：部署、配置与排错指南" class="headerlink" title="从零搞定 Tomcat：部署、配置与排错指南"></a>从零搞定 Tomcat：部署、配置与排错指南</h1><blockquote>
+<p>极简实战笔记，帮你快速上手 Tomcat 并学会自己定位问题。</p>
+</blockquote>
+<hr>
+<h2 id="1-部署-Tomcat（以-Ubuntu-Linux-为例）"><a href="#1-部署-Tomcat（以-Ubuntu-Linux-为例）" class="headerlink" title="1. 部署 Tomcat（以 Ubuntu &#x2F; Linux 为例）"></a>1. 部署 Tomcat（以 Ubuntu &#x2F; Linux 为例）</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装 JDK（必需）</span></span><br><span class="line"><span class="built_in">sudo</span> apt update</span><br><span class="line"><span class="built_in">sudo</span> apt install openjdk-11-jdk -y</span><br><span class="line"></span><br><span class="line"><span class="comment"># 下载 Tomcat（以 9.0.x 为例）</span></span><br><span class="line"><span class="built_in">cd</span> /opt</span><br><span class="line"><span class="built_in">sudo</span> wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.98/bin/apache-tomcat-9.0.98.tar.gz</span><br><span class="line"><span class="built_in">sudo</span> tar -xzf apache-tomcat-9.0.98.tar.gz</span><br><span class="line"><span class="built_in">sudo</span> <span class="built_in">mv</span> apache-tomcat-9.0.98 tomcat</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置环境变量（可选）</span></span><br><span class="line"><span class="built_in">export</span> CATALINA_HOME=/opt/tomcat</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动</span></span><br><span class="line"><span class="variable">$CATALINA_HOME</span>/bin/startup.sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># 停止</span></span><br><span class="line"><span class="variable">$CATALINA_HOME</span>/bin/shutdown.sh</span><br></pre></td></tr></table></figure>
+
+<p>访问 <code>http://你的服务器IP:8080</code>，看到 Tomcat 首页即成功。</p>
+<blockquote>
+<p>💡 生产环境建议配置 systemd 服务：创建 <code>/etc/systemd/system/tomcat.service</code></p>
+</blockquote>
+<hr>
+<h2 id="2-主配置速览"><a href="#2-主配置速览" class="headerlink" title="2. 主配置速览"></a>2. 主配置速览</h2><ul>
+<li><strong>主配置文件</strong>：<code>$CATALINA_HOME/conf/server.xml</code></li>
+<li><strong>Web 应用部署目录</strong>：<code>$CATALINA_HOME/webapps/</code>（放 WAR 包或目录）</li>
+<li><strong>全局上下文配置</strong>：<code>$CATALINA_HOME/conf/context.xml</code></li>
+<li><strong>用户&#x2F;角色配置</strong>：<code>$CATALINA_HOME/conf/tomcat-users.xml</code></li>
+</ul>
+<h3 id="常用配置示例（修改端口-开启管理页面）"><a href="#常用配置示例（修改端口-开启管理页面）" class="headerlink" title="常用配置示例（修改端口 &#x2F; 开启管理页面）"></a>常用配置示例（修改端口 &#x2F; 开启管理页面）</h3><p><strong>server.xml</strong> 修改 HTTP 端口：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Connector</span> <span class="attr">port</span>=<span class="string">&quot;8080&quot;</span> <span class="attr">protocol</span>=<span class="string">&quot;HTTP/1.1&quot;</span> </span></span><br><span class="line"><span class="tag">           <span class="attr">connectionTimeout</span>=<span class="string">&quot;20000&quot;</span> </span></span><br><span class="line"><span class="tag">           <span class="attr">redirectPort</span>=<span class="string">&quot;8443&quot;</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>tomcat-users.xml</strong> 添加管理用户：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">role</span> <span class="attr">rolename</span>=<span class="string">&quot;manager-gui&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">user</span> <span class="attr">username</span>=<span class="string">&quot;admin&quot;</span> <span class="attr">password</span>=<span class="string">&quot;yourpass&quot;</span> <span class="attr">roles</span>=<span class="string">&quot;manager-gui&quot;</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>修改后重启 Tomcat 生效。</p>
+<hr>
+<h2 id="3-报错怎么办？去哪找问题？"><a href="#3-报错怎么办？去哪找问题？" class="headerlink" title="3. 报错怎么办？去哪找问题？"></a>3. 报错怎么办？去哪找问题？</h2><h3 id="🔍-排错三步走"><a href="#🔍-排错三步走" class="headerlink" title="🔍 排错三步走"></a>🔍 排错三步走</h3><ol>
+<li><strong>看 Tomcat 自身日志</strong>（最重要）<br>日志目录：<code>$CATALINA_HOME/logs/</code></li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>日志文件</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>catalina.out</code></td>
+<td>主日志 + 应用 System.out 输出</td>
+</tr>
+<tr>
+<td><code>localhost.log</code></td>
+<td>应用启动&#x2F;部署相关错误</td>
+</tr>
+<tr>
+<td><code>manager.log</code></td>
+<td>管理后台操作日志</td>
+</tr>
+<tr>
+<td><code>catalina.&lt;日期&gt;.log</code></td>
+<td>更详细的历史记录</td>
+</tr>
+</tbody></table>
+   <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">tail</span> -f <span class="variable">$CATALINA_HOME</span>/logs/catalina.out</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li><p><strong>检查应用部署日志</strong>  </p>
+<ul>
+<li>部署 WAR 时，<code>localhost.log</code> 会记录解压、类加载失败等错误。</li>
+<li>访问应用 404，先看 <code>webapps/</code> 下是否有对应的目录或 WAR 已展开。</li>
+</ul>
+</li>
+<li><p><strong>确认端口是否监听</strong>  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> netstat -tulnp | grep 8080</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="🚨-常见错误速查"><a href="#🚨-常见错误速查" class="headerlink" title="🚨 常见错误速查"></a>🚨 常见错误速查</h3><table>
+<thead>
+<tr>
+<th>现象</th>
+<th>可能原因</th>
+<th>去哪看</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>启动后访问 8080 无响应</td>
+<td>端口被占用 &#x2F; 防火墙未开放</td>
+<td><code>catalina.out</code> + <code>netstat</code></td>
+</tr>
+<tr>
+<td>404 应用未找到</td>
+<td>WAR 未部署成功或路径错误</td>
+<td><code>localhost.log</code> + <code>webapps/</code> 目录</td>
+</tr>
+<tr>
+<td>403 Manager 页面拒绝访问</td>
+<td>未配置用户&#x2F;角色</td>
+<td><code>tomcat-users.xml</code> + <code>manager.log</code></td>
+</tr>
+<tr>
+<td>内存溢出 (OOM)</td>
+<td>JVM 堆太小</td>
+<td><code>catalina.out</code> 末尾，需调整 <code>JAVA_OPTS</code></td>
+</tr>
+<tr>
+<td>启动立即退出</td>
+<td>JDK 未安装 &#x2F; 环境变量错误</td>
+<td><code>catalina.out</code> 开头部分</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="4-小贴士"><a href="#4-小贴士" class="headerlink" title="4. 小贴士"></a>4. 小贴士</h2><ul>
+<li><strong>每次修改 server.xml 或 context.xml 后记得重启</strong>：<code>shutdown.sh</code> + <code>startup.sh</code></li>
+<li>生产环境去掉 <code>catalina.out</code> 的冗长输出，改用 logrotate 切割。</li>
+<li>部署新 WAR 前，建议先删除 <code>webapps/</code> 下对应的旧目录，避免缓存冲突。</li>
+<li>若需远程管理，务必修改默认密码并限制访问 IP。</li>
+</ul>
+<blockquote>
+<p> Tomcat 问题都能从 <code>catalina.out</code> 和 <code>localhost.log</code> 里找到答案。</p>
+</blockquote>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/04/05/tomcat/" data-id="cuidaSnN7QfqAlKiI8D2OaxIH" data-title="tomcat" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-我篇博客-1" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2026/04/05/%E6%88%91%E7%AF%87%E5%8D%9A%E5%AE%A2-1/" class="article-date">
@@ -97,7 +281,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/04/05/%E6%88%91%E7%AF%87%E5%8D%9A%E5%AE%A2-1/" data-id="cuidg3HHqrIf1YjZQTWt76vCs" data-title="我aaa" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="http://example.com/2026/04/05/%E6%88%91%E7%AF%87%E5%8D%9A%E5%AE%A2-1/" data-id="cuidd3VtfX60_OFBzuw15lKVP" data-title="我aaa" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
@@ -135,7 +319,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/04/05/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2/" data-id="cuidswt7R9FQwFIzhb79R3Nrc" data-title="我的第一篇博客" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="http://example.com/2026/04/05/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2/" data-id="cuidX2XZ7VsjHbhfiuPO7b0eG" data-title="我的第一篇博客" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
@@ -181,7 +365,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/01/14/HTTP/" data-id="cuidPbD0FV583809lcJsowImG" data-title="HTTP" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="http://example.com/2026/01/14/HTTP/" data-id="cuidzbo4w7mnvAsVCfEjgXVMO" data-title="HTTP" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
@@ -219,7 +403,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/01/13/SSH/" data-id="cuiduPrsMwCpGeGzCwycx0k3G" data-title="SSH" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="http://example.com/2026/01/13/SSH/" data-id="cuidqEF_bZ4BYvVKLatDP1N1G" data-title="SSH" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
@@ -261,7 +445,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/01/12/rsync%E6%A1%88%E4%BE%8B/" data-id="cuidIOzGRERIlxwGupEUilRy7" data-title="rsync案例" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="http://example.com/2026/01/12/rsync%E6%A1%88%E4%BE%8B/" data-id="cuidncY5kX4IJo6Dydspe7qPZ" data-title="rsync案例" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
@@ -375,7 +559,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/01/10/Nginx%EF%BC%9A%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/" data-id="cuidshe4gE3u8wGnlu5g6dQ3Y" data-title="Nginx" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="http://example.com/2026/01/10/Nginx%EF%BC%9A%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/" data-id="cuidJGakhRouog-uNgkBptkvM" data-title="Nginx" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
@@ -422,7 +606,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/01/08/rsync/" data-id="cuid53TLKvQzepzEB4tGpvRyR" data-title="rsync" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="http://example.com/2026/01/08/rsync/" data-id="cuidDo_qdP4aGJS4AXi7VzVQp" data-title="rsync" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
@@ -479,7 +663,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/01/08/NFS/" data-id="cuidRVW37GNrF85fsd0EXFkbZ" data-title="NFS" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="http://example.com/2026/01/08/NFS/" data-id="cuidpQSA1xsVPjVapOoexFGJS" data-title="NFS" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
@@ -522,6 +706,14 @@
       <ul>
         
           <li>
+            <a href="/2026/04/05/tomcat-1/">tomcat</a>
+          </li>
+        
+          <li>
+            <a href="/2026/04/05/tomcat/">tomcat</a>
+          </li>
+        
+          <li>
             <a href="/2026/04/05/%E6%88%91%E7%AF%87%E5%8D%9A%E5%AE%A2-1/">我aaa</a>
           </li>
         
@@ -531,14 +723,6 @@
         
           <li>
             <a href="/2026/01/14/HTTP/">HTTP</a>
-          </li>
-        
-          <li>
-            <a href="/2026/01/13/SSH/">SSH</a>
-          </li>
-        
-          <li>
-            <a href="/2026/01/12/rsync%E6%A1%88%E4%BE%8B/">rsync案例</a>
           </li>
         
       </ul>
