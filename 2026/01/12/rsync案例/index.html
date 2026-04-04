@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>rsync案例 | 安逸</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="1234567891011121314151617181920212223242526272829303132333435服务端: Rsync服务 10.0.0.41客户端: 10.0.0.7 10.0.0.31客户端脚本需求1.客户端提前准备存放的备份的目录，目录规则如下:&#x2F;backup&#x2F;web01_172.16.1.7_202510102.客户端在本地打包备份(hosts passwd cro">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rsync案例">
+<meta property="og:url" content="http://example.com/2026/01/12/rsync%E6%A1%88%E4%BE%8B/index.html">
+<meta property="og:site_name" content="安逸">
+<meta property="og:description" content="1234567891011121314151617181920212223242526272829303132333435服务端: Rsync服务 10.0.0.41客户端: 10.0.0.7 10.0.0.31客户端脚本需求1.客户端提前准备存放的备份的目录，目录规则如下:&#x2F;backup&#x2F;web01_172.16.1.7_202510102.客户端在本地打包备份(hosts passwd cro">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-01-11T17:49:32.000Z">
+<meta property="article:modified_time" content="2026-01-15T09:48:30.671Z">
+<meta property="article:author" content="anyi">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="安逸" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">安逸</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS 订阅"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="搜索"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜索"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-rsync案例" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/01/12/rsync%E6%A1%88%E4%BE%8B/" class="article-date">
+  <time class="dt-published" datetime="2026-01-11T17:49:32.000Z" itemprop="datePublished">2026-01-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      rsync案例
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">服务端: Rsync服务 10.0.0.41</span><br><span class="line">客户端: 10.0.0.7 10.0.0.31</span><br><span class="line">客户端脚本需求</span><br><span class="line">1.客户端提前准备存放的备份的目录，目录规则如</span><br><span class="line">下:/backup/web01_172.16.1.7_20251010</span><br><span class="line">2.客户端在本地打包备份(hosts passwd crontab)拷</span><br><span class="line">贝至/backup/web01_172.16.1.7_20251010</span><br><span class="line">3.客户端最后将备份的数据进行推送至备份服务器41</span><br><span class="line">4.客户端每天凌晨1点定时执行该脚本(定时每分钟执行)</span><br><span class="line">5.客户端服务器本地保留最近7天的数据, 避免浪费磁盘空间</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#!/bin/bash</span></span><br><span class="line"><span class="comment">##设置变量</span></span><br><span class="line">DIR=`hostname`_`hostname -I|awk <span class="string">&#x27;&#123;print $1&#125;&#x27;</span>`_`<span class="built_in">date</span> +%F`</span><br><span class="line"><span class="comment">#创建目录</span></span><br><span class="line"><span class="built_in">mkdir</span> -p /backup/<span class="variable">$DIR</span></span><br><span class="line"><span class="comment">#打包文件host和passwd</span></span><br><span class="line"><span class="built_in">cd</span> /etc/</span><br><span class="line">tar zcf /backup/<span class="variable">$DIR</span>/all.tar.gz hosts passwd</span><br><span class="line"><span class="built_in">md5sum</span> /backup/<span class="variable">$DIR</span>/all.tar.gz &gt; /backup/<span class="variable">$DIR</span>/md5.<span class="built_in">log</span></span><br><span class="line"><span class="comment">#推送到backup</span></span><br><span class="line"><span class="built_in">export</span> RSYNC_PASSWORD=123</span><br><span class="line">rsync -az /backup/<span class="variable">$DIR</span> rsync_backup@172.16.1.41::backup</span><br><span class="line"><span class="comment">#保留七天数据</span></span><br><span class="line">find /backup/ -mtime +7|xargs <span class="built_in">rm</span> -rf</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#写入定时任务 </span></span><br><span class="line">[root@web01 ~]#<span class="built_in">tail</span> -1 /etc/crontab</span><br><span class="line">00 01 * * * root sh /server/scripts/backup.sh &amp;&gt;/dev/null</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/01/12/rsync%E6%A1%88%E4%BE%8B/" data-id="cuidUF5Drm21beS0czZ1DseDK" data-title="rsync案例" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2026/01/13/SSH/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前一篇</strong>
+      <div class="article-nav-title">
+        
+          SSH
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2026/01/10/Nginx%EF%BC%9A%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">后一篇</strong>
+      <div class="article-nav-title">Nginx</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/04/">四月 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/01/">一月 2026</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/04/05/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2/">我的第一篇博客</a>
+          </li>
+        
+          <li>
+            <a href="/2026/01/14/HTTP/">HTTP</a>
+          </li>
+        
+          <li>
+            <a href="/2026/01/13/SSH/">SSH</a>
+          </li>
+        
+          <li>
+            <a href="/2026/01/12/rsync%E6%A1%88%E4%BE%8B/">rsync案例</a>
+          </li>
+        
+          <li>
+            <a href="/2026/01/10/Nginx%EF%BC%9A%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/">Nginx</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2026 anyi<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

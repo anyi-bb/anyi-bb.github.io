@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>Nginx | 安逸</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Nginx：部署、配置与排错指南 1. 部署 Nginx123456789101112# 更新软件源yum update# 安装 Nginxyum install nginx -y# 启动并设置开机自启 systemctl start nginx systemctl enable nginx# 检查状态 systemctl status nginx  访问 http:&#x2F;&#x2F;你的服务器IP，看到 We">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Nginx">
+<meta property="og:url" content="http://example.com/2026/01/10/Nginx%EF%BC%9A%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/index.html">
+<meta property="og:site_name" content="安逸">
+<meta property="og:description" content="Nginx：部署、配置与排错指南 1. 部署 Nginx123456789101112# 更新软件源yum update# 安装 Nginxyum install nginx -y# 启动并设置开机自启 systemctl start nginx systemctl enable nginx# 检查状态 systemctl status nginx  访问 http:&#x2F;&#x2F;你的服务器IP，看到 We">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-01-10T07:58:13.000Z">
+<meta property="article:modified_time" content="2026-04-04T19:26:01.441Z">
+<meta property="article:author" content="anyi">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="安逸" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">安逸</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS 订阅"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="搜索"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜索"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-Nginx：部署、配置与排错指南" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/01/10/Nginx%EF%BC%9A%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/" class="article-date">
+  <time class="dt-published" datetime="2026-01-10T07:58:13.000Z" itemprop="datePublished">2026-01-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      Nginx
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="Nginx：部署、配置与排错指南"><a href="#Nginx：部署、配置与排错指南" class="headerlink" title="Nginx：部署、配置与排错指南"></a>Nginx：部署、配置与排错指南</h1><hr>
+<h2 id="1-部署-Nginx"><a href="#1-部署-Nginx" class="headerlink" title="1. 部署 Nginx"></a>1. 部署 Nginx</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 更新软件源</span></span><br><span class="line">yum update</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装 Nginx</span></span><br><span class="line">yum install nginx -y</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动并设置开机自启</span></span><br><span class="line"> systemctl start nginx</span><br><span class="line"> systemctl <span class="built_in">enable</span> nginx</span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查状态</span></span><br><span class="line"> systemctl status nginx</span><br></pre></td></tr></table></figure>
+
+<p>访问 <code>http://你的服务器IP</code>，看到 Welcome 页面即成功。</p>
+<blockquote>
+<p>💡 CentOS &#x2F; RHEL 用 <code>yum install nginx</code>；Docker 方式：<code>docker run -d -p 80:80 nginx</code></p>
+</blockquote>
+<hr>
+<h2 id="2-主配置速览"><a href="#2-主配置速览" class="headerlink" title="2. 主配置速览"></a>2. 主配置速览</h2><ul>
+<li><strong>主配置文件</strong>：<code>/etc/nginx/nginx.conf</code></li>
+<li><strong>站点配置目录</strong>：<code>/etc/nginx/conf.d/</code> 或 <code>/etc/nginx/sites-enabled/</code></li>
+<li><strong>日志目录</strong>：<code>/var/log/nginx/</code>（<code>access.log</code> + <code>error.log</code>）</li>
+</ul>
+<h3 id="最小配置示例（反向代理）"><a href="#最小配置示例（反向代理）" class="headerlink" title="最小配置示例（反向代理）"></a>最小配置示例（反向代理）</h3><figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">server</span> &#123;</span><br><span class="line">    <span class="attribute">listen</span> <span class="number">80</span>;</span><br><span class="line">    <span class="attribute">server_name</span> example.com;</span><br><span class="line"></span><br><span class="line">    <span class="section">location</span> / &#123;</span><br><span class="line">        <span class="attribute">proxy_pass</span> http://127.0.0.1:3000;</span><br><span class="line">        <span class="attribute">proxy_set_header</span> Host <span class="variable">$host</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>修改配置后测试并重载：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nginx -t          <span class="comment"># 测试配置语法</span></span><br><span class="line">systemctl reload nginx</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="3-报错怎么办？去哪找问题？"><a href="#3-报错怎么办？去哪找问题？" class="headerlink" title="3. 报错怎么办？去哪找问题？"></a>3. 报错怎么办？去哪找问题？</h2><h3 id="排错"><a href="#排错" class="headerlink" title="排错"></a>排错</h3><ol>
+<li><p><strong>看 Nginx 自身报错</strong>  </p>
+<ul>
+<li>启动&#x2F;重载失败时，运行 <code>sudo nginx -t</code> 会指出第几行配置有误。</li>
+<li>服务起不来： systemctl status nginx&#96; 看详细日志。</li>
+</ul>
+</li>
+<li><p><strong>查错误日志</strong>（最常用）  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">tail</span> -f /var/log/nginx/error.log</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>13: Permission denied</code> → 文件权限&#x2F;SElinux 问题  </li>
+<li><code>111: Connection refused</code> → 上游服务没启动  </li>
+<li><code>24: Too many open files</code> → 调整系统限制</li>
+</ul>
+</li>
+<li><p><strong>确认访问日志</strong>（看请求是否到达）  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">tail</span> -f /var/log/nginx/access.log</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="常见错误"><a href="#常见错误" class="headerlink" title="常见错误"></a>常见错误</h3><table>
+<thead>
+<tr>
+<th>现象</th>
+<th>可能原因</th>
+<th>去哪看</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>502 Bad Gateway</td>
+<td>后端服务挂了</td>
+<td>error.log + 检查后端端口</td>
+</tr>
+<tr>
+<td>404 Not Found</td>
+<td><code>root</code> 路径不对</td>
+<td>error.log 会记录文件路径</td>
+</tr>
+<tr>
+<td>403 Forbidden</td>
+<td>缺少 index 或权限</td>
+<td>error.log + <code>ls -l</code> 检查目录</td>
+</tr>
+<tr>
+<td>端口被占用</td>
+<td>80&#x2F;443 已被其他进程占用</td>
+<td><code>sudo netstat -tulnp</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="ps"><a href="#ps" class="headerlink" title="ps"></a>ps</h2><ul>
+<li><strong>每次改配置后务必</strong> <code>sudo nginx -t</code>，避免重启失败导致服务断连。</li>
+<li>生产环境开启 <code>error_log</code> 级别 <code>warn</code> 或 <code>error</code>，避免日志撑爆磁盘。</li>
+<li>遇到诡异问题，先 <code>sudo nginx -T</code> 查看实际生效的全量配置。</li>
+</ul>
+<blockquote>
+<p>学会看 error.log，你就解决了 90% 的 Nginx 问题。</p>
+</blockquote>
+<hr>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/01/10/Nginx%EF%BC%9A%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/" data-id="cuidZKVLDNu4a2ixwTFJInk-_" data-title="Nginx" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2026/01/12/rsync%E6%A1%88%E4%BE%8B/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前一篇</strong>
+      <div class="article-nav-title">
+        
+          rsync案例
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2026/01/08/rsync/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">后一篇</strong>
+      <div class="article-nav-title">rsync</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/04/">四月 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/01/">一月 2026</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/04/05/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2/">我的第一篇博客</a>
+          </li>
+        
+          <li>
+            <a href="/2026/01/14/HTTP/">HTTP</a>
+          </li>
+        
+          <li>
+            <a href="/2026/01/13/SSH/">SSH</a>
+          </li>
+        
+          <li>
+            <a href="/2026/01/12/rsync%E6%A1%88%E4%BE%8B/">rsync案例</a>
+          </li>
+        
+          <li>
+            <a href="/2026/01/10/Nginx%EF%BC%9A%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/">Nginx</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2026 anyi<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
