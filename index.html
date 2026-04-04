@@ -71,6 +71,74 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-LNMP拆分" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/04/05/LNMP%E6%8B%86%E5%88%86/" class="article-date">
+  <time class="dt-published" datetime="2026-04-04T20:19:54.000Z" itemprop="datePublished">2026-04-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2026/04/05/LNMP%E6%8B%86%E5%88%86/">LNMP拆分</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>根据文档内容，以下是 LNMP 架构拆分的详细步骤及对应代码。</p>
+<hr>
+<h2 id="LNMP-架构拆分步骤"><a href="#LNMP-架构拆分步骤" class="headerlink" title="LNMP 架构拆分步骤"></a>LNMP 架构拆分步骤</h2><h3 id="1-创建数据库服务器（10-0-0-51），安装-MariaDB"><a href="#1-创建数据库服务器（10-0-0-51），安装-MariaDB" class="headerlink" title="1. 创建数据库服务器（10.0.0.51），安装 MariaDB"></a>1. 创建数据库服务器（10.0.0.51），安装 MariaDB</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装 MariaDB 服务端</span></span><br><span class="line">yum -y install mariadb-server</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动并设置开机自启</span></span><br><span class="line">systemctl start mariadb</span><br><span class="line">systemctl <span class="built_in">enable</span> mariadb</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-在-web01-上导出所有数据库，并拷贝到-51-服务器"><a href="#2-在-web01-上导出所有数据库，并拷贝到-51-服务器" class="headerlink" title="2. 在 web01 上导出所有数据库，并拷贝到 51 服务器"></a>2. 在 web01 上导出所有数据库，并拷贝到 51 服务器</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 导出所有库</span></span><br><span class="line">mysqldump -uroot -plzy123.com -A &gt; all.sql</span><br><span class="line"></span><br><span class="line"><span class="comment"># 将 all.sql 拷贝到 51 服务器</span></span><br><span class="line">scp all.sql 10.0.0.51:</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-在-51-服务器上导入-all-sql"><a href="#3-在-51-服务器上导入-all-sql" class="headerlink" title="3. 在 51 服务器上导入 all.sql"></a>3. 在 51 服务器上导入 all.sql</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 导入数据库</span></span><br><span class="line">mysql -uroot &lt; all.sql</span><br><span class="line"></span><br><span class="line"><span class="comment"># 重启数据库</span></span><br><span class="line">systemctl restart mariadb</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看导入是否成功</span></span><br><span class="line">mysql -uroot -plzy123.com -e <span class="string">&quot;show databases;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="4-创建远程连接用户并授权"><a href="#4-创建远程连接用户并授权" class="headerlink" title="4. 创建远程连接用户并授权"></a>4. 创建远程连接用户并授权</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在 51 服务器上执行，创建 lzy 用户允许远程连接</span></span><br><span class="line">mysql -uroot -plzy123.com -e <span class="string">&quot;grant all on *.* to lzy@&#x27;%&#x27; identified by &#x27;lzy123.com&#x27;;&quot;</span></span><br><span class="line">mysql -uroot -plzy123.com -e <span class="string">&quot;flush privileges;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="5-停止-web01-上的-MariaDB-服务"><a href="#5-停止-web01-上的-MariaDB-服务" class="headerlink" title="5. 停止 web01 上的 MariaDB 服务"></a>5. 停止 web01 上的 MariaDB 服务</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl stop mariadb</span><br><span class="line">systemctl <span class="built_in">disable</span> mariadb</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-修改-WordPress-代码中的数据库指向"><a href="#6-修改-WordPress-代码中的数据库指向" class="headerlink" title="6. 修改 WordPress 代码中的数据库指向"></a>6. 修改 WordPress 代码中的数据库指向</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 进入 wordpress 目录，查找配置文件</span></span><br><span class="line"><span class="built_in">cd</span> /code/wordpress</span><br><span class="line">grep -r <span class="string">&#x27;lzy123.com&#x27;</span> ./*</span><br><span class="line"></span><br><span class="line"><span class="comment"># 编辑 wp-config.php，修改 DB_HOST 为 51 服务器 IP</span></span><br><span class="line">vim wp-config.php</span><br></pre></td></tr></table></figure>
+<p>修改内容：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">define</span>(<span class="string">&#x27;DB_NAME&#x27;</span>, <span class="string">&#x27;wordpress&#x27;</span>);</span><br><span class="line"><span class="title function_ invoke__">define</span>(<span class="string">&#x27;DB_USER&#x27;</span>, <span class="string">&#x27;lzy&#x27;</span>);</span><br><span class="line"><span class="title function_ invoke__">define</span>(<span class="string">&#x27;DB_PASSWORD&#x27;</span>, <span class="string">&#x27;lzy123.com&#x27;</span>);</span><br><span class="line"><span class="title function_ invoke__">define</span>(<span class="string">&#x27;DB_HOST&#x27;</span>, <span class="string">&#x27;172.16.1.51&#x27;</span>);   <span class="comment">// 改为远程数据库 IP</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="7-创建-web02-服务器，安装-Nginx-和-PHP"><a href="#7-创建-web02-服务器，安装-Nginx-和-PHP" class="headerlink" title="7. 创建 web02 服务器，安装 Nginx 和 PHP"></a>7. 创建 web02 服务器，安装 Nginx 和 PHP</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 拷贝 nginx 仓库配置</span></span><br><span class="line">scp 10.0.0.7:/etc/yum.repos.d/nginx.repo /etc/yum.repos.d/</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装 nginx</span></span><br><span class="line">yum -y install nginx</span><br><span class="line"></span><br><span class="line"><span class="comment"># 拷贝 web01 的 nginx 站点配置</span></span><br><span class="line">rsync -avz 10.0.0.7:/etc/nginx/conf.d/ /etc/nginx/conf.d/</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装 php 及扩展</span></span><br><span class="line">yum -y install php php-bcmath php-cli php-common php-devel php-embedded php-fpm php-gd php-intl php-mbstring php-mysqld php-opcache php-pdo php-process php-xml php-json</span><br><span class="line"></span><br><span class="line"><span class="comment"># 拷贝 php-fpm 配置文件</span></span><br><span class="line">scp 10.0.0.7:/etc/php-fpm.d/www.conf /etc/php-fpm.d/</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建 www 用户（与 web01  uid/gid 一致）</span></span><br><span class="line">groupadd -g 666 www</span><br><span class="line">useradd -u 666 -g www -M -s /sbin/nologin www</span><br><span class="line"></span><br><span class="line"><span class="comment"># 测试配置并启动服务</span></span><br><span class="line">nginx -t</span><br><span class="line">php-fpm -t</span><br><span class="line">systemctl start nginx php-fpm</span><br><span class="line">systemctl <span class="built_in">enable</span> nginx php-fpm</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-将-web01-代码打包并拷贝到-web02"><a href="#8-将-web01-代码打包并拷贝到-web02" class="headerlink" title="8. 将 web01 代码打包并拷贝到 web02"></a>8. 将 web01 代码打包并拷贝到 web02</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在 web01 上打包代码</span></span><br><span class="line">tar zcvf code.tar.gz /code</span><br><span class="line"></span><br><span class="line"><span class="comment"># 拷贝到 web02</span></span><br><span class="line">scp code.tar.gz 10.0.0.8:~/</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在 web02 上解压到根目录</span></span><br><span class="line">tar xf code.tar.gz -C /</span><br></pre></td></tr></table></figure>
+
+<h3 id="9-部署-NFS-服务器（10-0-0-31）"><a href="#9-部署-NFS-服务器（10-0-0-31）" class="headerlink" title="9. 部署 NFS 服务器（10.0.0.31）"></a>9. 部署 NFS 服务器（10.0.0.31）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装 nfs</span></span><br><span class="line">yum -y install nfs-utils</span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置 exports</span></span><br><span class="line"><span class="built_in">cat</span> &gt; /etc/exports &lt;&lt;<span class="string">EOF</span></span><br><span class="line"><span class="string">/data/wp 172.16.1.0/24(rw,sync,all_squash,anonuid=666,anongid=666)</span></span><br><span class="line"><span class="string">/data/zh 172.16.1.0/24(rw,sync,all_squash,anonuid=666,anongid=666)</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建共享目录和用户</span></span><br><span class="line">groupadd -g 666 www</span><br><span class="line">useradd -u 666 -g www -M -s /sbin/nologin www</span><br><span class="line"><span class="built_in">mkdir</span> -p /data/wp /data/zh</span><br><span class="line"><span class="built_in">chown</span> -R www.www /data/</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动 nfs</span></span><br><span class="line">systemctl restart nfs</span><br><span class="line">systemctl <span class="built_in">enable</span> nfs</span><br></pre></td></tr></table></figure>
+
+<h3 id="10-将最全的静态资源拷贝到-NFS-服务器"><a href="#10-将最全的静态资源拷贝到-NFS-服务器" class="headerlink" title="10. 将最全的静态资源拷贝到 NFS 服务器"></a>10. 将最全的静态资源拷贝到 NFS 服务器</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在 web02 上执行（假设 web02 拥有最新图片）</span></span><br><span class="line">scp -r /code/wordpress/wp-content/uploads/* 10.0.0.31:/data/wp/</span><br></pre></td></tr></table></figure>
+
+<h3 id="11-在-web01-和-web02-上挂载-NFS-共享目录"><a href="#11-在-web01-和-web02-上挂载-NFS-共享目录" class="headerlink" title="11. 在 web01 和 web02 上挂载 NFS 共享目录"></a>11. 在 web01 和 web02 上挂载 NFS 共享目录</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装 nfs 客户端（如未安装）</span></span><br><span class="line">yum -y install nfs-utils</span><br><span class="line"></span><br><span class="line"><span class="comment"># 挂载 NFS（web01 和 web02 分别执行）</span></span><br><span class="line">mount -t nfs 172.16.1.31:/data/wp /code/wordpress/wp-content/uploads/</span><br><span class="line"></span><br><span class="line"><span class="comment"># 验证挂载</span></span><br><span class="line"><span class="built_in">df</span> -h</span><br></pre></td></tr></table></figure>
+
+<h3 id="12-创建反向代理服务器（10-0-0-5）"><a href="#12-创建反向代理服务器（10-0-0-5）" class="headerlink" title="12. 创建反向代理服务器（10.0.0.5）"></a>12. 创建反向代理服务器（10.0.0.5）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 拷贝 nginx 仓库并安装（同前）</span></span><br><span class="line">scp 10.0.0.7:/etc/yum.repos.d/nginx.repo /etc/yum.repos.d/</span><br><span class="line">yum -y install nginx</span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置负载均衡和反向代理</span></span><br><span class="line"><span class="built_in">cat</span> &gt; /etc/nginx/conf.d/lb.conf &lt;&lt;<span class="string">&#x27;EOF&#x27;</span></span><br><span class="line">upstream webs &#123;</span><br><span class="line">    server 10.0.0.7;</span><br><span class="line">    server 10.0.0.8;</span><br><span class="line">&#125;</span><br><span class="line">server &#123;</span><br><span class="line">    listen 80;</span><br><span class="line">    server_name www.wp.com;</span><br><span class="line">    location / &#123;</span><br><span class="line">        proxy_pass http://webs;</span><br><span class="line">        proxy_set_header Host <span class="variable">$http_host</span>;</span><br><span class="line">        proxy_set_header X-Forwarded-For <span class="variable">$proxy_add_x_forwarded_for</span>;</span><br><span class="line">        proxy_http_version 1.1;</span><br><span class="line">        proxy_connect_timeout 30;</span><br><span class="line">        proxy_send_timeout 60;</span><br><span class="line">        proxy_read_timeout 60;</span><br><span class="line">        proxy_buffering on;</span><br><span class="line">        proxy_buffer_size 32k;</span><br><span class="line">        proxy_buffers 4 128k;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动 nginx</span></span><br><span class="line">systemctl start nginx</span><br></pre></td></tr></table></figure>
+
+<h3 id="13-（可选）修改本地-hosts-测试"><a href="#13-（可选）修改本地-hosts-测试" class="headerlink" title="13. （可选）修改本地 hosts 测试"></a>13. （可选）修改本地 hosts 测试</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在 Windows 或测试机 hosts 中添加</span></span><br><span class="line">10.0.0.5 www.wp.com</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/04/05/LNMP%E6%8B%86%E5%88%86/" data-id="cuidTNAB0WUSAVBF711rCWT59" data-title="LNMP拆分" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-Tomcat：部署、配置与排错指南" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2026/04/05/Tomcat%EF%BC%9A%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/" class="article-date">
@@ -204,7 +272,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/04/05/Tomcat%EF%BC%9A%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/" data-id="cuidOxigLXCXAL9xq9DzsJfgE" data-title="Tomcat部署、配置与排错指南" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="http://example.com/2026/04/05/Tomcat%EF%BC%9A%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/" data-id="cuidLOVbmQN6sRV4fodsy5ffg" data-title="Tomcat部署、配置与排错指南" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
@@ -216,9 +284,9 @@
 
 
   
-    <article id="post-我篇博客-1" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+    <article id="post-mysql部署与基础设置" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2026/04/05/%E6%88%91%E7%AF%87%E5%8D%9A%E5%AE%A2-1/" class="article-date">
+    <a href="/2026/04/05/mysql%E9%83%A8%E7%BD%B2%E4%B8%8E%E5%9F%BA%E7%A1%80%E8%AE%BE%E7%BD%AE/" class="article-date">
   <time class="dt-published" datetime="2026-04-04T19:31:57.000Z" itemprop="datePublished">2026-04-05</time>
 </a>
     
@@ -230,7 +298,7 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2026/04/05/%E6%88%91%E7%AF%87%E5%8D%9A%E5%AE%A2-1/">我aaa</a>
+      <a class="p-name article-title" href="/2026/04/05/mysql%E9%83%A8%E7%BD%B2%E4%B8%8E%E5%9F%BA%E7%A1%80%E8%AE%BE%E7%BD%AE/">mysql部署与基础设置</a>
     </h1>
   
 
@@ -238,11 +306,100 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        
+        <h3 id="1-部署-MySQL"><a href="#1-部署-MySQL" class="headerlink" title="1. 部署 MySQL"></a>1. 部署 MySQL</h3><p>CentOS 7&#x2F;8 默认 yum 源无 MySQL，需先配置官方 YUM 仓库[reference:0]。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 下载并安装 MySQL 8.0 YUM 源（CentOS 7 示例）</span></span><br><span class="line">rpm -Uvh https://dev.mysql.com/get/mysql80-community-release-el7-11.noarch.rpm</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装 MySQL 服务器</span></span><br><span class="line">yum install -y mysql-community-server</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动并设置开机自启</span></span><br><span class="line">systemctl start mysqld</span><br><span class="line">systemctl <span class="built_in">enable</span> mysqld</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看服务状态</span></span><br><span class="line">systemctl status mysqld</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>💡 CentOS 8 需选择 <code>mysql80-community-release-el8</code> 对应版本包。</p>
+</blockquote>
+<h3 id="2-初始配置与安全加固"><a href="#2-初始配置与安全加固" class="headerlink" title="2. 初始配置与安全加固"></a>2. 初始配置与安全加固</h3><p>MySQL 8.0 首次启动时会生成随机临时密码，必须立即修改[reference:1]。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 获取临时密码</span></span><br><span class="line">grep <span class="string">&#x27;temporary password&#x27;</span> /var/log/mysqld.log</span><br><span class="line"></span><br><span class="line"><span class="comment"># 登录 MySQL</span></span><br><span class="line">mysql -u root -p</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改 root 密码（需符合强度要求，如 MyNewPass_123!）</span></span><br><span class="line">ALTER USER <span class="string">&#x27;root&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span> IDENTIFIED BY <span class="string">&#x27;YourStrongPass123!&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 禁用密码过期（避免下次登录被拒）</span></span><br><span class="line">ALTER USER <span class="string">&#x27;root&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span> PASSWORD EXPIRE NEVER;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 刷新权限</span></span><br><span class="line">FLUSH PRIVILEGES;</span><br></pre></td></tr></table></figure>
+
+<p><strong>安全加固向导</strong>（可选但强烈推荐）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql_secure_installation</span><br></pre></td></tr></table></figure>
+
+<p>向导交互流程：设置新 root 密码 → 移除匿名用户 → 禁止 root 远程登录 → 删除 test 库 → 重载权限表[reference:2]。</p>
+<h3 id="3-配置文件速览"><a href="#3-配置文件速览" class="headerlink" title="3. 配置文件速览"></a>3. 配置文件速览</h3><ul>
+<li><strong>主配置文件</strong>：<code>/etc/my.cnf</code>（或 <code>/etc/mysql/my.cnf</code>）</li>
+</ul>
+<p>常用配置项（在 <code>[mysqld]</code> 段下添加）：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 字符集</span></span><br><span class="line"><span class="attr">character-set-server</span> = utf8mb4</span><br><span class="line"><span class="attr">collation-server</span> = utf8mb4_unicode_ci</span><br><span class="line"></span><br><span class="line"><span class="comment"># 监听地址（0.0.0.0 允许远程连接，127.0.0.1 仅本机）</span></span><br><span class="line"><span class="attr">bind-address</span> = <span class="number">0.0</span>.<span class="number">0.0</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 最大连接数</span></span><br><span class="line"><span class="attr">max_connections</span> = <span class="number">500</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># InnoDB 缓冲池大小（通常设为服务器内存的 70%-80%）</span></span><br><span class="line"><span class="attr">innodb_buffer_pool_size</span> = <span class="number">1</span>G</span><br><span class="line"></span><br><span class="line"><span class="comment"># 错误日志路径</span></span><br><span class="line"><span class="attr">log-error</span> = /var/log/mysqld.log</span><br></pre></td></tr></table></figure>
+
+<p>修改后重启：<code>systemctl restart mysqld</code></p>
+<h3 id="4-远程访问配置"><a href="#4-远程访问配置" class="headerlink" title="4. 远程访问配置"></a>4. 远程访问配置</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 创建专用管理用户（安全起见，不用 root 远程）</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">USER</span> <span class="string">&#x27;admin&#x27;</span>@<span class="string">&#x27;192.168.1.%&#x27;</span> IDENTIFIED <span class="keyword">BY</span> <span class="string">&#x27;StrongPass123!&#x27;</span>;</span><br><span class="line"><span class="keyword">GRANT</span> <span class="keyword">ALL</span> PRIVILEGES <span class="keyword">ON</span> <span class="operator">*</span>.<span class="operator">*</span> <span class="keyword">TO</span> <span class="string">&#x27;admin&#x27;</span>@<span class="string">&#x27;192.168.1.%&#x27;</span> <span class="keyword">WITH</span> <span class="keyword">GRANT</span> OPTION;</span><br><span class="line">FLUSH PRIVILEGES;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 若 root 也要远程，需在 mysql.user 中修改 host</span></span><br><span class="line"><span class="keyword">UPDATE</span> mysql.user <span class="keyword">SET</span> host<span class="operator">=</span><span class="string">&#x27;%&#x27;</span> <span class="keyword">WHERE</span> <span class="keyword">user</span><span class="operator">=</span><span class="string">&#x27;root&#x27;</span>;</span><br><span class="line">FLUSH PRIVILEGES;</span><br></pre></td></tr></table></figure>
+
+<p>开放防火墙：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">firewall-cmd --permanent --add-port=3306/tcp</span><br><span class="line">firewall-cmd --reload</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="5-报错"><a href="#5-报错" class="headerlink" title="5. 报错"></a>5. 报错</h3><h4 id="排错"><a href="#排错" class="headerlink" title="排错"></a>排错</h4><ol>
+<li><p><strong>看 MySQL 错误日志</strong>（核心）  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">tail</span> -f /var/log/mysqld.log</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>检查服务状态</strong>  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl status mysqld</span><br><span class="line">journalctl -u mysqld -n 50      <span class="comment"># 查看最近系统日志</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>检查端口与权限</strong>  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">netstat -tulnp | grep 3306</span><br><span class="line">ps aux | grep mysqld</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h4 id="常见错误速查"><a href="#常见错误速查" class="headerlink" title="常见错误速查"></a>常见错误速查</h4><table>
+<thead>
+<tr>
+<th>现象</th>
+<th>可能原因</th>
+<th>排查方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>启动失败，<code>ERROR [MY-010257]</code></td>
+<td>端口 3306 被占用</td>
+<td><code>netstat -tulnp | grep 3306</code>，停用冲突进程或修改 <code>port</code></td>
+</tr>
+<tr>
+<td><code>Access denied for user</code></td>
+<td>密码错误或认证插件不匹配</td>
+<td>核对密码；MySQL 8.0 默认 <code>caching_sha2_password</code>，老客户端需改用 <code>mysql_native_password</code>[reference:3]</td>
+</tr>
+<tr>
+<td>远程连接失败</td>
+<td><code>bind-address</code> 未放开 &#x2F; 防火墙 &#x2F; SELinux</td>
+<td><code>bind-address = 0.0.0.0</code>；<code>firewall-cmd --add-port=3306/tcp</code>；<code>setsebool -P mysqld_connect_any 1</code>[reference:4]</td>
+</tr>
+<tr>
+<td><code>temporary password</code> 未生成</td>
+<td>数据目录权限问题</td>
+<td><code>chown -R mysql:mysql /var/lib/mysql</code></td>
+</tr>
+<tr>
+<td>密码过期无法登录</td>
+<td>首次改密后未设置 <code>PASSWORD EXPIRE NEVER</code></td>
+<td>临时以 <code>skip-grant-tables</code> 启动修复</td>
+</tr>
+<tr>
+<td><code>Too many connections</code></td>
+<td><code>max_connections</code> 太小</td>
+<td>修改配置文件调大该值并重启</td>
+</tr>
+</tbody></table>
+<h3 id="ps"><a href="#ps" class="headerlink" title="ps"></a>ps</h3><ul>
+<li><p>每次修改配置后执行 <code>mysqld --validate-config</code> 校验语法，避免重启失败。</p>
+</li>
+<li><p>生产环境建议：关闭 root 远程登录 + 创建专属应用用户 + 限制来源 IP。</p>
+</li>
+<li><p>密码策略调整（降低强度仅适用于开发环境）：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SET</span> <span class="keyword">GLOBAL</span> validate_password.policy <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"><span class="keyword">SET</span> <span class="keyword">GLOBAL</span> validate_password.length <span class="operator">=</span> <span class="number">4</span>;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<blockquote>
+<p>✅ <strong>90% 的 MySQL 问题都能从 <code>/var/log/mysqld.log</code> 和 <code>systemctl status mysqld</code> 里找到答案。</strong></p>
+</blockquote>
+<h3 id="附：替代安装方式简介"><a href="#附：替代安装方式简介" class="headerlink" title="附：替代安装方式简介"></a>附：替代安装方式简介</h3><ul>
+<li><strong>二进制包安装</strong>：适合无 YUM 源的场景。步骤为下载解压 → 创建 mysql 用户 → 初始化数据库 → 配置 systemd 服务[reference:5]。</li>
+</ul>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/04/05/%E6%88%91%E7%AF%87%E5%8D%9A%E5%AE%A2-1/" data-id="cuidtZR-rkahN-CRWOy3v1l_g" data-title="我aaa" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="http://example.com/2026/04/05/mysql%E9%83%A8%E7%BD%B2%E4%B8%8E%E5%9F%BA%E7%A1%80%E8%AE%BE%E7%BD%AE/" data-id="cuidkxfEkvQ1V56vpORKz_zxG" data-title="mysql部署与基础设置" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
@@ -276,11 +433,51 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        
+        <h5 id="1-部署Nginx"><a href="#1-部署Nginx" class="headerlink" title="1.部署Nginx"></a>1.部署Nginx</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">1.配置官网仓库</span><br><span class="line">[root@web01 ~]# <span class="built_in">cat</span> /etc/yum.repos.d/nginx.repo </span><br><span class="line">[nginx-stable]</span><br><span class="line">name=nginx stable repo</span><br><span class="line">baseurl=http://nginx.org/packages/centos/7/<span class="variable">$basearch</span>/</span><br><span class="line">gpgcheck=0</span><br><span class="line">enabled=1</span><br><span class="line">gpgkey=https://nginx.org/keys/nginx_signing.key</span><br><span class="line">module_hotfixes=<span class="literal">true</span></span><br><span class="line"></span><br><span class="line">2.安装nginx服务</span><br><span class="line">[root@web01 ~]# yum -y install nginx</span><br><span class="line"></span><br><span class="line">3.配置Nginx服务 部署博客系统</span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="2-部署PHP服务"><a href="#2-部署PHP服务" class="headerlink" title="2.部署PHP服务"></a>2.部署PHP服务</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">1.安装php服务</span><br><span class="line">[root@web01 ~]# yum -y install php php-bcmath php-cli php-common php-devel php-embedded php-fpm php-gd php-intl php-mbstring php-mysqlnd php-opcache php-pdo   php-process php-xml php-json</span><br><span class="line"></span><br><span class="line"><span class="comment">#验证是否安装成功 15个包</span></span><br><span class="line">[root@web01 ~]# rpm -qa|grep php|<span class="built_in">wc</span> -l</span><br><span class="line">15</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">2.配置PHP服务 修改默认启动用户</span><br><span class="line">PHP配置文件</span><br><span class="line">[root@web01 ~]# ll /etc/php.ini /etc/php-fpm.d/www.conf </span><br><span class="line">-rw-r--r-- 1 root root 19415 Mar 31 16:54 /etc/php-fpm.d/www.conf</span><br><span class="line">-rw-r--r-- 1 root root 62221 Mar 31 16:54 /etc/php.ini</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">a.修改启动用户</span><br><span class="line">[root@web01 ~]# groupadd -g666 www</span><br><span class="line">[root@web01 ~]# useradd -u666 -g666 -M -s /sbin/nologin www</span><br><span class="line">[root@web01 ~]# vim /etc/php-fpm.d/www.conf</span><br><span class="line">...</span><br><span class="line">user = www</span><br><span class="line">; RPM: Keep a group allowed to write <span class="keyword">in</span> <span class="built_in">log</span> <span class="built_in">dir</span>.</span><br><span class="line">group = www</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">b.修改监听方式</span><br><span class="line">[root@web01 ~]# grep 127.0.0.1:9000 /etc/php-fpm.d/www.conf  -n</span><br><span class="line">38:listen = 127.0.0.1:9000</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">3.启动PHP服务</span><br><span class="line">[root@web01 ~]# systemctl start php-fpm</span><br><span class="line">[root@web01 ~]# systemctl <span class="built_in">enable</span> php-fpm</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">4.检查PHP服务</span><br><span class="line">[root@web01 ~]# netstat -tnulp</span><br><span class="line">Active Internet connections (only servers)</span><br><span class="line">Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    </span><br><span class="line">tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      4557/nginx: master  </span><br><span class="line">tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      989/sshd: /usr/sbin </span><br><span class="line">tcp        0      0 127.0.0.1:9000          0.0.0.0:*               LISTEN      24981/php-fpm: mast </span><br><span class="line">tcp6       0      0 :::22                   :::*                    LISTEN      989/sshd: /usr/sbin </span><br><span class="line"></span><br><span class="line">[root@web01 ~]# php-fpm -t</span><br><span class="line">[10-Dec-2024 10:38:27] NOTICE: configuration file /etc/php-fpm.conf <span class="built_in">test</span> is successful</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h5 id="3-安装mariadb数据库"><a href="#3-安装mariadb数据库" class="headerlink" title="3.安装mariadb数据库"></a>3.安装mariadb数据库</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">1.安装mariadb</span><br><span class="line">[root@web01 ~]# yum  -y install mariadb-server</span><br><span class="line"></span><br><span class="line">2.启动mariadb服务</span><br><span class="line">[root@web01 ~]# systemctl start mariadb</span><br><span class="line">[root@web01 ~]# systemctl <span class="built_in">enable</span> mariadb</span><br><span class="line"></span><br><span class="line">3.配置密码</span><br><span class="line">[root@web01 ~]# mysqladmin password <span class="string">&#x27;lzy123.com&#x27;</span></span><br><span class="line"></span><br><span class="line">4.测试登录</span><br><span class="line">[root@web01 ~]# mysql -uroot -plzy123.com</span><br><span class="line">Welcome to the MariaDB monitor.  Commands end with ; or \g.</span><br><span class="line">Your MariaDB connection <span class="built_in">id</span> is 9</span><br><span class="line">Server version: 10.3.39-MariaDB MariaDB Server</span><br><span class="line"></span><br><span class="line">Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.</span><br><span class="line"></span><br><span class="line">Type <span class="string">&#x27;help;&#x27;</span> or <span class="string">&#x27;\h&#x27;</span> <span class="keyword">for</span> <span class="built_in">help</span>. Type <span class="string">&#x27;\c&#x27;</span> to clear the current input statement.</span><br><span class="line"></span><br><span class="line">MariaDB [(none)]&gt; quit</span><br><span class="line">Bye</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><img src="/Users/n73dizhi/Desktop/102/day34-LNMP%E6%9E%B6%E6%9E%84.assets/image-20250814083400680.png" alt="image-20250814083400680"></p>
+<p><img src="/Users/n73dizhi/Desktop/102/day34-LNMP%E6%9E%B6%E6%9E%84.assets/image-20250814083219993.png" alt="image-20250814083219993"></p>
+<h6 id="配置Nginx连接PHP"><a href="#配置Nginx连接PHP" class="headerlink" title="配置Nginx连接PHP"></a>配置Nginx连接PHP</h6><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">1.写配置文件打通和PHP连接</span><br><span class="line">[root@web01 conf.d]# <span class="built_in">cat</span> php.conf </span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">2.写一个php文件测试是否可以正常解析</span><br><span class="line">[root@web01 conf.d]# <span class="built_in">cat</span> /code/info.php</span><br><span class="line">&lt;?php</span><br><span class="line">        phpinfo();</span><br><span class="line">?&gt;</span><br><span class="line"></span><br><span class="line">3.检查配置文件并重启</span><br><span class="line">[root@web01 conf.d]# nginx -t</span><br><span class="line">nginx: the configuration file /etc/nginx/nginx.conf syntax is ok</span><br><span class="line">nginx: configuration file /etc/nginx/nginx.conf <span class="built_in">test</span> is successful</span><br><span class="line">[root@web01 conf.d]# systemctl restart nginx</span><br><span class="line"></span><br><span class="line">4.浏览器测试访问</span><br><span class="line">windowshosts解析</span><br><span class="line">10.0.0.7 php.oldboy.com</span><br><span class="line">php.oldboy.com/info.php</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">出现以下页面则正常</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><img src="/Users/n73dizhi/Desktop/102/day34-LNMP%E6%9E%B6%E6%9E%84.assets/image-20241210112336126.png" alt="image-20241210112336126"></p>
+<p>配置PHP连接MYSQL数据库</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#需要再php的配置文件中写入数据库的IP+端口+用户名+密码可以测试是否连接数据库</span></span><br><span class="line">[root@web01 conf.d]# <span class="built_in">cat</span> /code/mysql.php</span><br><span class="line">&lt;?php</span><br><span class="line">    <span class="variable">$servername</span> = <span class="string">&quot;localhost&quot;</span>;</span><br><span class="line">    <span class="variable">$username</span> = <span class="string">&quot;root&quot;</span>;</span><br><span class="line">    <span class="variable">$password</span> = <span class="string">&quot;lzy123.com&quot;</span>;</span><br><span class="line"></span><br><span class="line">    // 创建连接</span><br><span class="line">    <span class="variable">$conn</span> = mysqli_connect(<span class="variable">$servername</span>, <span class="variable">$username</span>, <span class="variable">$password</span>);</span><br><span class="line"></span><br><span class="line">    // 检测连接</span><br><span class="line">    <span class="keyword">if</span> (!<span class="variable">$conn</span>) &#123;</span><br><span class="line">        die(<span class="string">&quot;Connection failed: &quot;</span> . mysqli_connect_error());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&quot;小哥哥,php可以连接MySQL...&quot;</span>;</span><br><span class="line">?&gt;</span><br><span class="line"></span><br><span class="line">&lt;img style=<span class="string">&#x27;width:100%;height:100%;&#x27;</span> src=/31.png&gt;</span><br><span class="line"></span><br><span class="line">浏览器访问:</span><br><span class="line">php.oldboy.com/mysql.php</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h5 id="4-部署wordpress业务"><a href="#4-部署wordpress业务" class="headerlink" title="4.部署wordpress业务"></a>4.部署wordpress业务</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">1.创建nginx配置文件</span><br><span class="line">[root@web01 conf.d]# <span class="built_in">cp</span> php.conf wp.conf</span><br><span class="line">[root@web01 conf.d]# <span class="built_in">cat</span> wp.conf</span><br><span class="line">server &#123;</span><br><span class="line">        listen 80;</span><br><span class="line">        server_name www.wp.com;</span><br><span class="line">        root /code/wordpress;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">                index index.php index.html;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        location ~ \.php$ &#123;</span><br><span class="line">                fastcgi_pass 127.0.0.1:9000;</span><br><span class="line">                fastcgi_param SCRIPT_FILENAME $document_root<span class="variable">$fastcgi_script_name</span>;</span><br><span class="line">		include fastcgi_params;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">2.测试nginx</span><br><span class="line">[root@web01 conf.d]# nginx -t</span><br><span class="line">nginx: the configuration file /etc/nginx/nginx.conf syntax is ok</span><br><span class="line">nginx: configuration file /etc/nginx/nginx.conf <span class="built_in">test</span> is successful</span><br><span class="line"></span><br><span class="line">3.重启生效</span><br><span class="line">[root@web01 conf.d]# systemctl restart nginx</span><br><span class="line"></span><br><span class="line">4.创建代码目录</span><br><span class="line">[root@web01 conf.d]# <span class="built_in">mkdir</span> /code/wordpress</span><br><span class="line"></span><br><span class="line">5.下载wordpress代码</span><br><span class="line">[root@web01 conf.d]# <span class="built_in">cd</span> /code/wordpress/</span><br><span class="line">[root@web01 code]# wget https://cn.wordpress.org/wordpress-6.0-zh_CN.tar.gz</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">6.解压代码</span><br><span class="line">[root@web01 code]# tar xf wordpress-6.0-zh_CN.tar.gz</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">7.hosts解析</span><br><span class="line">10.0.0.7 www.wp.com</span><br><span class="line">浏览器访问业务</span><br><span class="line">www.wp.com</span><br></pre></td></tr></table></figure>
+
+<p>需要填写数据库信息</p>
+<p><img src="/Users/n73dizhi/Desktop/102/day34-LNMP%E6%9E%B6%E6%9E%84.assets/image-20241210114105689.png" alt="image-20241210114105689"></p>
+<p>需要在数据库中创建wordpress库</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@web01 code]# mysql -uroot -plzy123.com -e <span class="string">&quot;create database wordpress;&quot;</span></span><br><span class="line"></span><br><span class="line">[root@web01 wordpress]# mysql -uroot -plzy123.com -e <span class="string">&quot;show databases;&quot;</span></span><br><span class="line">+--------------------+</span><br><span class="line">| Database           |</span><br><span class="line">+--------------------+</span><br><span class="line">| information_schema |</span><br><span class="line">| mysql              |</span><br><span class="line">| performance_schema |</span><br><span class="line">| wordpress          |</span><br><span class="line">+--------------------+</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<p>继续填写信息</p>
+<p><img src="/Users/n73dizhi/Desktop/102/day34-LNMP%E6%9E%B6%E6%9E%84.assets/image-20241210114305917.png" alt="image-20241210114305917"></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">统一用户</span><br><span class="line">1.创建用户uid gid 666 的www虚拟账号</span><br><span class="line">[root@web01 nginx]# groupadd -g666 www</span><br><span class="line">[root@web01 nginx]# useradd -u666 -g666 -M -s /sbin/nologin www</span><br><span class="line"></span><br><span class="line">2.修改nginx启动用户</span><br><span class="line">[root@web01 nginx]# grep www nginx.conf  -n</span><br><span class="line">2:user  www;</span><br><span class="line">[root@web01 nginx]# systemctl restart nginx</span><br><span class="line"></span><br><span class="line">3.修改php启动用户</span><br><span class="line">[root@web01 nginx]# egrep -n <span class="string">&#x27;^user|^group&#x27;</span> /etc/php-fpm.d/www.conf</span><br><span class="line">24:user = www</span><br><span class="line">26:group = www</span><br><span class="line"></span><br><span class="line">[root@web01 nginx]# systemctl restart php-fpm</span><br><span class="line"></span><br><span class="line">4.修改代码目录属主属组为www</span><br><span class="line">[root@web01 nginx]# <span class="built_in">chown</span> -R www.www /code/wordpress/</span><br></pre></td></tr></table></figure>
+
+
+
+<p>完成上述操作后刷新页面直接进入下一步</p>
+<p><img src="/Users/n73dizhi/Desktop/102/day34-LNMP%E6%9E%B6%E6%9E%84.assets/image-20241210115055893.png" alt="image-20241210115055893"></p>
+<p><img src="/Users/n73dizhi/Desktop/102/day34-LNMP%E6%9E%B6%E6%9E%84.assets/image-20241210115138690.png" alt="image-20241210115138690"></p>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/04/05/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2/" data-id="cuidv6SijI1HDBZjvO4JxaweC" data-title="我的第一篇博客" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="http://example.com/2026/04/05/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2/" data-id="cuidDVIn2pugyQwcb-L-3jUoC" data-title="我的第一篇博客" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
@@ -326,7 +523,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/01/14/HTTP/" data-id="cuidRL3Au0bFZNzmifzNEeRfO" data-title="HTTP" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="http://example.com/2026/01/14/HTTP/" data-id="cuidqY3u371Z-5n46KGTkSDJ9" data-title="HTTP" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
@@ -444,7 +641,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/01/13/SSH%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/" data-id="cuidY_mR46o70P7itHS8y64EM" data-title="SSH部署、配置与排错指南" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="http://example.com/2026/01/13/SSH%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/" data-id="cuiddKQpJxigN78RTsEOovIMe" data-title="SSH部署、配置与排错指南" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
@@ -486,7 +683,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/01/12/rsync%E6%A1%88%E4%BE%8B/" data-id="cuid1D41TYw4axR6b6T3qMZmM" data-title="rsync案例" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="http://example.com/2026/01/12/rsync%E6%A1%88%E4%BE%8B/" data-id="cuidGzc24iPQGv0DxXixIQt5j" data-title="rsync案例" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
@@ -600,7 +797,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/01/10/Nginx%EF%BC%9A%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/" data-id="cuidHlg7DKsIuzAUQ_MLl2Yxx" data-title="Nginx部署、配置与排错指南" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="http://example.com/2026/01/10/Nginx%EF%BC%9A%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/" data-id="cuidfRl-HbYqLU1toR-FtHi_d" data-title="Nginx部署、配置与排错指南" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
@@ -723,7 +920,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/01/08/rsync%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/" data-id="cuidZdppedhLSwxOd5Ca63DyR" data-title="rsync部署、配置与排错指南" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="http://example.com/2026/01/08/rsync%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/" data-id="cuidIf_uVq070BNVNQq1cQECY" data-title="rsync部署、配置与排错指南" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
@@ -735,9 +932,9 @@
 
 
   
-    <article id="post-NFS" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+    <article id="post-nfs部署、配置与排错指南" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2026/01/08/NFS/" class="article-date">
+    <a href="/2026/01/08/nfs%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/" class="article-date">
   <time class="dt-published" datetime="2026-01-07T18:08:26.000Z" itemprop="datePublished">2026-01-08</time>
 </a>
     
@@ -749,7 +946,7 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2026/01/08/NFS/">部署、配置与排错指南</a>
+      <a class="p-name article-title" href="/2026/01/08/nfs%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/">nfs部署、配置与排错指南</a>
     </h1>
   
 
@@ -811,7 +1008,7 @@
 <h3 id="永久挂载（写入-etc-fstab）"><a href="#永久挂载（写入-etc-fstab）" class="headerlink" title="永久挂载（写入 &#x2F;etc&#x2F;fstab）"></a>永久挂载（写入 &#x2F;etc&#x2F;fstab）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">&quot;192.168.1.100:/data/share /mnt/nfs nfs defaults 0 0&quot;</span> &gt;&gt; /etc/fstab</span><br><span class="line">mount -a   <span class="comment"># 测试挂载</span></span><br></pre></td></tr></table></figure>
 
 <hr>
-<h2 id="4-报错怎么办？去哪找问题？"><a href="#4-报错怎么办？去哪找问题？" class="headerlink" title="4. 报错怎么办？去哪找问题？"></a>4. 报错怎么办？去哪找问题？</h2><h3 id="🔍-排错三步走"><a href="#🔍-排错三步走" class="headerlink" title="🔍 排错三步走"></a>🔍 排错三步走</h3><ol>
+<h2 id="4-报错"><a href="#4-报错" class="headerlink" title="4. 报错"></a>4. 报错</h2><h3 id="🔍排错"><a href="#🔍排错" class="headerlink" title="🔍排错"></a>🔍排错</h3><ol>
 <li><p><strong>查看服务端 NFS 状态</strong>  </p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">systemctl status nfs-server</span><br><span class="line">exportfs -v          <span class="comment"># 查看当前生效的共享</span></span><br><span class="line">showmount -e localhost   <span class="comment"># 查看本机导出列表</span></span><br></pre></td></tr></table></figure>
 </li>
@@ -821,7 +1018,7 @@
 <li><p><strong>客户端测试连通性</strong>  </p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">showmount -e 服务端IP      <span class="comment"># 看能否获取导出列表</span></span><br><span class="line">rpcinfo -p 服务端IP        <span class="comment"># 检查 RPC 服务是否正常</span></span><br></pre></td></tr></table></figure></li>
 </ol>
-<h3 id="🚨-常见错误速查"><a href="#🚨-常见错误速查" class="headerlink" title="🚨 常见错误速查"></a>🚨 常见错误速查</h3><table>
+<h3 id="常见错误"><a href="#常见错误" class="headerlink" title="常见错误"></a>常见错误</h3><table>
 <thead>
 <tr>
 <th>现象</th>
@@ -856,22 +1053,20 @@
 </tr>
 </tbody></table>
 <hr>
-<h2 id="5-小贴士"><a href="#5-小贴士" class="headerlink" title="5. 小贴士"></a>5. 小贴士</h2><ul>
+<h2 id="ps"><a href="#ps" class="headerlink" title="ps"></a>ps</h2><ul>
 <li>修改 <code>/etc/exports</code> 后记得 <code>exportfs -r</code>，不用重启服务。</li>
 <li>生产环境建议用 <code>sync</code> 参数避免数据丢失。</li>
 <li>NFS 依赖 RPC 服务（portmap&#x2F;rpcbind），确保它已启动。</li>
 <li>防火墙开启 NFS 需要固定端口（附加配置 <code>rpcinfo</code> 相关），简单测试可先 <code>systemctl stop firewalld</code>。</li>
 </ul>
 <blockquote>
-<p>✅ <strong>90% 的 NFS 问题都在 <code>/var/log/messages</code> 和 <code>exportfs -v</code> 里找到线索。</strong></p>
+<p> NFS 问题都在 <code>/var/log/messages</code> 和 <code>exportfs -v</code> 里找到线索。**</p>
 </blockquote>
-<hr>
-<p><em>希望这篇短文帮你快速跑通 NFS（CentOS）并具备独立排错能力。欢迎留言交流！</em></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/01/08/NFS/" data-id="cuidoRtesDc9rhIrk0N5cxWWh" data-title="部署、配置与排错指南" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="http://example.com/2026/01/08/nfs%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/" data-id="cuidZGRGcmLdn_IvUWB9fvRyU" data-title="nfs部署、配置与排错指南" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
@@ -914,11 +1109,15 @@
       <ul>
         
           <li>
+            <a href="/2026/04/05/LNMP%E6%8B%86%E5%88%86/">LNMP拆分</a>
+          </li>
+        
+          <li>
             <a href="/2026/04/05/Tomcat%EF%BC%9A%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/">Tomcat部署、配置与排错指南</a>
           </li>
         
           <li>
-            <a href="/2026/04/05/%E6%88%91%E7%AF%87%E5%8D%9A%E5%AE%A2-1/">我aaa</a>
+            <a href="/2026/04/05/mysql%E9%83%A8%E7%BD%B2%E4%B8%8E%E5%9F%BA%E7%A1%80%E8%AE%BE%E7%BD%AE/">mysql部署与基础设置</a>
           </li>
         
           <li>
@@ -927,10 +1126,6 @@
         
           <li>
             <a href="/2026/01/14/HTTP/">HTTP</a>
-          </li>
-        
-          <li>
-            <a href="/2026/01/13/SSH%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/">SSH部署、配置与排错指南</a>
           </li>
         
       </ul>

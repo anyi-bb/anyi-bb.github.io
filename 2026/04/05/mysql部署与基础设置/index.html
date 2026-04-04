@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>mysql部署与基础设置 | 安逸</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="1. 部署 MySQLCentOS 7&#x2F;8 默认 yum 源无 MySQL，需先配置官方 YUM 仓库[reference:0]。 123456789101112# 下载并安装 MySQL 8.0 YUM 源（CentOS 7 示例）rpm -Uvh https:&#x2F;&#x2F;dev.mysql.com&#x2F;get&#x2F;mysql80-community-release-el7-11.noarch.rpm">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mysql部署与基础设置">
+<meta property="og:url" content="http://example.com/2026/04/05/mysql%E9%83%A8%E7%BD%B2%E4%B8%8E%E5%9F%BA%E7%A1%80%E8%AE%BE%E7%BD%AE/index.html">
+<meta property="og:site_name" content="安逸">
+<meta property="og:description" content="1. 部署 MySQLCentOS 7&#x2F;8 默认 yum 源无 MySQL，需先配置官方 YUM 仓库[reference:0]。 123456789101112# 下载并安装 MySQL 8.0 YUM 源（CentOS 7 示例）rpm -Uvh https:&#x2F;&#x2F;dev.mysql.com&#x2F;get&#x2F;mysql80-community-release-el7-11.noarch.rpm">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-04-04T19:31:57.000Z">
+<meta property="article:modified_time" content="2026-04-04T20:04:04.504Z">
+<meta property="article:author" content="anyi">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="安逸" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">安逸</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS 订阅"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="搜索"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜索"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-mysql部署与基础设置" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/04/05/mysql%E9%83%A8%E7%BD%B2%E4%B8%8E%E5%9F%BA%E7%A1%80%E8%AE%BE%E7%BD%AE/" class="article-date">
+  <time class="dt-published" datetime="2026-04-04T19:31:57.000Z" itemprop="datePublished">2026-04-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      mysql部署与基础设置
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h3 id="1-部署-MySQL"><a href="#1-部署-MySQL" class="headerlink" title="1. 部署 MySQL"></a>1. 部署 MySQL</h3><p>CentOS 7&#x2F;8 默认 yum 源无 MySQL，需先配置官方 YUM 仓库[reference:0]。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 下载并安装 MySQL 8.0 YUM 源（CentOS 7 示例）</span></span><br><span class="line">rpm -Uvh https://dev.mysql.com/get/mysql80-community-release-el7-11.noarch.rpm</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装 MySQL 服务器</span></span><br><span class="line">yum install -y mysql-community-server</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动并设置开机自启</span></span><br><span class="line">systemctl start mysqld</span><br><span class="line">systemctl <span class="built_in">enable</span> mysqld</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看服务状态</span></span><br><span class="line">systemctl status mysqld</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>💡 CentOS 8 需选择 <code>mysql80-community-release-el8</code> 对应版本包。</p>
+</blockquote>
+<h3 id="2-初始配置与安全加固"><a href="#2-初始配置与安全加固" class="headerlink" title="2. 初始配置与安全加固"></a>2. 初始配置与安全加固</h3><p>MySQL 8.0 首次启动时会生成随机临时密码，必须立即修改[reference:1]。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 获取临时密码</span></span><br><span class="line">grep <span class="string">&#x27;temporary password&#x27;</span> /var/log/mysqld.log</span><br><span class="line"></span><br><span class="line"><span class="comment"># 登录 MySQL</span></span><br><span class="line">mysql -u root -p</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改 root 密码（需符合强度要求，如 MyNewPass_123!）</span></span><br><span class="line">ALTER USER <span class="string">&#x27;root&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span> IDENTIFIED BY <span class="string">&#x27;YourStrongPass123!&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 禁用密码过期（避免下次登录被拒）</span></span><br><span class="line">ALTER USER <span class="string">&#x27;root&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span> PASSWORD EXPIRE NEVER;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 刷新权限</span></span><br><span class="line">FLUSH PRIVILEGES;</span><br></pre></td></tr></table></figure>
+
+<p><strong>安全加固向导</strong>（可选但强烈推荐）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql_secure_installation</span><br></pre></td></tr></table></figure>
+
+<p>向导交互流程：设置新 root 密码 → 移除匿名用户 → 禁止 root 远程登录 → 删除 test 库 → 重载权限表[reference:2]。</p>
+<h3 id="3-配置文件速览"><a href="#3-配置文件速览" class="headerlink" title="3. 配置文件速览"></a>3. 配置文件速览</h3><ul>
+<li><strong>主配置文件</strong>：<code>/etc/my.cnf</code>（或 <code>/etc/mysql/my.cnf</code>）</li>
+</ul>
+<p>常用配置项（在 <code>[mysqld]</code> 段下添加）：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 字符集</span></span><br><span class="line"><span class="attr">character-set-server</span> = utf8mb4</span><br><span class="line"><span class="attr">collation-server</span> = utf8mb4_unicode_ci</span><br><span class="line"></span><br><span class="line"><span class="comment"># 监听地址（0.0.0.0 允许远程连接，127.0.0.1 仅本机）</span></span><br><span class="line"><span class="attr">bind-address</span> = <span class="number">0.0</span>.<span class="number">0.0</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 最大连接数</span></span><br><span class="line"><span class="attr">max_connections</span> = <span class="number">500</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># InnoDB 缓冲池大小（通常设为服务器内存的 70%-80%）</span></span><br><span class="line"><span class="attr">innodb_buffer_pool_size</span> = <span class="number">1</span>G</span><br><span class="line"></span><br><span class="line"><span class="comment"># 错误日志路径</span></span><br><span class="line"><span class="attr">log-error</span> = /var/log/mysqld.log</span><br></pre></td></tr></table></figure>
+
+<p>修改后重启：<code>systemctl restart mysqld</code></p>
+<h3 id="4-远程访问配置"><a href="#4-远程访问配置" class="headerlink" title="4. 远程访问配置"></a>4. 远程访问配置</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 创建专用管理用户（安全起见，不用 root 远程）</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">USER</span> <span class="string">&#x27;admin&#x27;</span>@<span class="string">&#x27;192.168.1.%&#x27;</span> IDENTIFIED <span class="keyword">BY</span> <span class="string">&#x27;StrongPass123!&#x27;</span>;</span><br><span class="line"><span class="keyword">GRANT</span> <span class="keyword">ALL</span> PRIVILEGES <span class="keyword">ON</span> <span class="operator">*</span>.<span class="operator">*</span> <span class="keyword">TO</span> <span class="string">&#x27;admin&#x27;</span>@<span class="string">&#x27;192.168.1.%&#x27;</span> <span class="keyword">WITH</span> <span class="keyword">GRANT</span> OPTION;</span><br><span class="line">FLUSH PRIVILEGES;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 若 root 也要远程，需在 mysql.user 中修改 host</span></span><br><span class="line"><span class="keyword">UPDATE</span> mysql.user <span class="keyword">SET</span> host<span class="operator">=</span><span class="string">&#x27;%&#x27;</span> <span class="keyword">WHERE</span> <span class="keyword">user</span><span class="operator">=</span><span class="string">&#x27;root&#x27;</span>;</span><br><span class="line">FLUSH PRIVILEGES;</span><br></pre></td></tr></table></figure>
+
+<p>开放防火墙：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">firewall-cmd --permanent --add-port=3306/tcp</span><br><span class="line">firewall-cmd --reload</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="5-报错"><a href="#5-报错" class="headerlink" title="5. 报错"></a>5. 报错</h3><h4 id="排错"><a href="#排错" class="headerlink" title="排错"></a>排错</h4><ol>
+<li><p><strong>看 MySQL 错误日志</strong>（核心）  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">tail</span> -f /var/log/mysqld.log</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>检查服务状态</strong>  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl status mysqld</span><br><span class="line">journalctl -u mysqld -n 50      <span class="comment"># 查看最近系统日志</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>检查端口与权限</strong>  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">netstat -tulnp | grep 3306</span><br><span class="line">ps aux | grep mysqld</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h4 id="常见错误速查"><a href="#常见错误速查" class="headerlink" title="常见错误速查"></a>常见错误速查</h4><table>
+<thead>
+<tr>
+<th>现象</th>
+<th>可能原因</th>
+<th>排查方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>启动失败，<code>ERROR [MY-010257]</code></td>
+<td>端口 3306 被占用</td>
+<td><code>netstat -tulnp | grep 3306</code>，停用冲突进程或修改 <code>port</code></td>
+</tr>
+<tr>
+<td><code>Access denied for user</code></td>
+<td>密码错误或认证插件不匹配</td>
+<td>核对密码；MySQL 8.0 默认 <code>caching_sha2_password</code>，老客户端需改用 <code>mysql_native_password</code>[reference:3]</td>
+</tr>
+<tr>
+<td>远程连接失败</td>
+<td><code>bind-address</code> 未放开 &#x2F; 防火墙 &#x2F; SELinux</td>
+<td><code>bind-address = 0.0.0.0</code>；<code>firewall-cmd --add-port=3306/tcp</code>；<code>setsebool -P mysqld_connect_any 1</code>[reference:4]</td>
+</tr>
+<tr>
+<td><code>temporary password</code> 未生成</td>
+<td>数据目录权限问题</td>
+<td><code>chown -R mysql:mysql /var/lib/mysql</code></td>
+</tr>
+<tr>
+<td>密码过期无法登录</td>
+<td>首次改密后未设置 <code>PASSWORD EXPIRE NEVER</code></td>
+<td>临时以 <code>skip-grant-tables</code> 启动修复</td>
+</tr>
+<tr>
+<td><code>Too many connections</code></td>
+<td><code>max_connections</code> 太小</td>
+<td>修改配置文件调大该值并重启</td>
+</tr>
+</tbody></table>
+<h3 id="ps"><a href="#ps" class="headerlink" title="ps"></a>ps</h3><ul>
+<li><p>每次修改配置后执行 <code>mysqld --validate-config</code> 校验语法，避免重启失败。</p>
+</li>
+<li><p>生产环境建议：关闭 root 远程登录 + 创建专属应用用户 + 限制来源 IP。</p>
+</li>
+<li><p>密码策略调整（降低强度仅适用于开发环境）：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SET</span> <span class="keyword">GLOBAL</span> validate_password.policy <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"><span class="keyword">SET</span> <span class="keyword">GLOBAL</span> validate_password.length <span class="operator">=</span> <span class="number">4</span>;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<blockquote>
+<p>✅ <strong>90% 的 MySQL 问题都能从 <code>/var/log/mysqld.log</code> 和 <code>systemctl status mysqld</code> 里找到答案。</strong></p>
+</blockquote>
+<h3 id="附：替代安装方式简介"><a href="#附：替代安装方式简介" class="headerlink" title="附：替代安装方式简介"></a>附：替代安装方式简介</h3><ul>
+<li><strong>二进制包安装</strong>：适合无 YUM 源的场景。步骤为下载解压 → 创建 mysql 用户 → 初始化数据库 → 配置 systemd 服务[reference:5]。</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/04/05/mysql%E9%83%A8%E7%BD%B2%E4%B8%8E%E5%9F%BA%E7%A1%80%E8%AE%BE%E7%BD%AE/" data-id="cuidkxfEkvQ1V56vpORKz_zxG" data-title="mysql部署与基础设置" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2026/04/05/Tomcat%EF%BC%9A%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前一篇</strong>
+      <div class="article-nav-title">
+        
+          Tomcat部署、配置与排错指南
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2026/04/05/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">后一篇</strong>
+      <div class="article-nav-title">我的第一篇博客</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/04/">四月 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/01/">一月 2026</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/04/05/LNMP%E6%8B%86%E5%88%86/">LNMP拆分</a>
+          </li>
+        
+          <li>
+            <a href="/2026/04/05/Tomcat%EF%BC%9A%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/">Tomcat部署、配置与排错指南</a>
+          </li>
+        
+          <li>
+            <a href="/2026/04/05/mysql%E9%83%A8%E7%BD%B2%E4%B8%8E%E5%9F%BA%E7%A1%80%E8%AE%BE%E7%BD%AE/">mysql部署与基础设置</a>
+          </li>
+        
+          <li>
+            <a href="/2026/04/05/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2/">我的第一篇博客</a>
+          </li>
+        
+          <li>
+            <a href="/2026/01/14/HTTP/">HTTP</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2026 anyi<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
