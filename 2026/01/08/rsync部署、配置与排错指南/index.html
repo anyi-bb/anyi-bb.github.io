@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>rsync部署、配置与排错指南 | 安逸</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="监听端口873  1. 部署 Rsync（服务端 &amp; 客户端）安装（两端均可执行）1yum install -y rsync  服务端（接收文件的机器）启动守护进程123456789# 编辑配置（见下节）vim &#x2F;etc&#x2F;rsyncd.conf# 启动服务systemctl start rsyncdsystemctl enable rsyncd# 检查状态systemctl status">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rsync部署、配置与排错指南">
+<meta property="og:url" content="http://example.com/2026/01/08/rsync%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/index.html">
+<meta property="og:site_name" content="安逸">
+<meta property="og:description" content="监听端口873  1. 部署 Rsync（服务端 &amp; 客户端）安装（两端均可执行）1yum install -y rsync  服务端（接收文件的机器）启动守护进程123456789# 编辑配置（见下节）vim &#x2F;etc&#x2F;rsyncd.conf# 启动服务systemctl start rsyncdsystemctl enable rsyncd# 检查状态systemctl status">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-01-08T15:27:09.000Z">
+<meta property="article:modified_time" content="2026-04-04T19:58:01.111Z">
+<meta property="article:author" content="anyi">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="安逸" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">安逸</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS 订阅"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="搜索"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜索"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-rsync部署、配置与排错指南" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/01/08/rsync%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/" class="article-date">
+  <time class="dt-published" datetime="2026-01-08T15:27:09.000Z" itemprop="datePublished">2026-01-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      rsync部署、配置与排错指南
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>监听端口873</p>
+<hr>
+<h2 id="1-部署-Rsync（服务端-客户端）"><a href="#1-部署-Rsync（服务端-客户端）" class="headerlink" title="1. 部署 Rsync（服务端 &amp; 客户端）"></a>1. 部署 Rsync（服务端 &amp; 客户端）</h2><h3 id="安装（两端均可执行）"><a href="#安装（两端均可执行）" class="headerlink" title="安装（两端均可执行）"></a>安装（两端均可执行）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y rsync</span><br></pre></td></tr></table></figure>
+
+<h3 id="服务端（接收文件的机器）启动守护进程"><a href="#服务端（接收文件的机器）启动守护进程" class="headerlink" title="服务端（接收文件的机器）启动守护进程"></a>服务端（接收文件的机器）启动守护进程</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 编辑配置（见下节）</span></span><br><span class="line">vim /etc/rsyncd.conf</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动服务</span></span><br><span class="line">systemctl start rsyncd</span><br><span class="line">systemctl <span class="built_in">enable</span> rsyncd</span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查状态</span></span><br><span class="line">systemctl status rsyncd</span><br></pre></td></tr></table></figure>
+
+<h3 id="客户端（发送文件的机器）无需启动服务，直接执行命令"><a href="#客户端（发送文件的机器）无需启动服务，直接执行命令" class="headerlink" title="客户端（发送文件的机器）无需启动服务，直接执行命令"></a>客户端（发送文件的机器）无需启动服务，直接执行命令</h3><hr>
+<h2 id="2-主配置（服务端-etc-rsyncd-conf）"><a href="#2-主配置（服务端-etc-rsyncd-conf）" class="headerlink" title="2. 主配置（服务端 /etc/rsyncd.conf）"></a>2. 主配置（服务端 <code>/etc/rsyncd.conf</code>）</h2><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 全局配置</span></span><br><span class="line"><span class="attr">uid</span> = root                     <span class="comment"># rsync 进程使用的用户身份（拥有文件权限）</span></span><br><span class="line"><span class="attr">gid</span> = root                     <span class="comment"># rsync 进程使用的组身份</span></span><br><span class="line">use <span class="attr">chroot</span> = <span class="literal">no</span>                <span class="comment"># 是否将进程禁锢在模块 path 目录下（no 可避免符号链接问题）</span></span><br><span class="line">max <span class="attr">connections</span> = <span class="number">10</span>           <span class="comment"># 最大并发连接数</span></span><br><span class="line">log <span class="attr">file</span> = /var/log/rsyncd.log <span class="comment"># 服务端日志文件路径</span></span><br><span class="line">pid <span class="attr">file</span> = /var/run/rsyncd.pid <span class="comment"># 进程 PID 文件路径</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 模块定义</span></span><br><span class="line"><span class="section">[backup]</span>                       <span class="comment"># 模块名称（客户端通过 ::backup 访问）</span></span><br><span class="line">    <span class="attr">path</span> = /data/backup        <span class="comment"># 共享的实际目录路径</span></span><br><span class="line">    <span class="attr">comment</span> = Backup Directory <span class="comment"># 模块描述信息（客户端列表时显示）</span></span><br><span class="line">    read <span class="attr">only</span> = <span class="literal">no</span>             <span class="comment"># 允许客户端写入（no 表示可读写）</span></span><br><span class="line">    auth <span class="attr">users</span> = rsync_user    <span class="comment"># 允许连接的用户名（需配合 secrets file）</span></span><br><span class="line">    secrets <span class="attr">file</span> = /etc/rsyncd.secrets  <span class="comment"># 存储用户名:密码的文件（权限需 600）</span></span><br><span class="line">    hosts <span class="attr">allow</span> = <span class="number">192.168</span>.<span class="number">1.0</span>/<span class="number">24</span>        <span class="comment"># 允许访问的 IP 网段</span></span><br><span class="line">    hosts <span class="attr">deny</span> = *                      <span class="comment"># 拒绝其他所有 IP</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>创建密钥文件</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">&quot;rsync_user:yourpassword&quot;</span> &gt; /etc/rsyncd.secrets</span><br><span class="line"><span class="built_in">chmod</span> 600 /etc/rsyncd.secrets</span><br></pre></td></tr></table></figure>
+
+<p><strong>启动服务</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl restart rsyncd</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="3-常用命令（客户端推送-拉取）"><a href="#3-常用命令（客户端推送-拉取）" class="headerlink" title="3. 常用命令（客户端推送&#x2F;拉取）"></a>3. 常用命令（客户端推送&#x2F;拉取）</h2><h3 id="推送到服务端"><a href="#推送到服务端" class="headerlink" title="推送到服务端"></a>推送到服务端</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rsync -avz --delete /local/dir/ rsync_user@服务端IP::backup</span><br></pre></td></tr></table></figure>
+
+<h3 id="从服务端拉取"><a href="#从服务端拉取" class="headerlink" title="从服务端拉取"></a>从服务端拉取</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rsync -avz rsync_user@服务端IP::backup /local/dir/</span><br></pre></td></tr></table></figure>
+
+<h3 id="本地同步（无需服务端）"><a href="#本地同步（无需服务端）" class="headerlink" title="本地同步（无需服务端）"></a>本地同步（无需服务端）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rsync -av /src/ /dst/</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="4-报错怎么办？去哪找问题？"><a href="#4-报错怎么办？去哪找问题？" class="headerlink" title="4. 报错怎么办？去哪找问题？"></a>4. 报错怎么办？去哪找问题？</h2><h3 id="🔍-排错三步走"><a href="#🔍-排错三步走" class="headerlink" title="🔍 排错三步走"></a>🔍 排错三步走</h3><ol>
+<li><p><strong>看服务端日志</strong>  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">tail</span> -f /var/log/rsyncd.log</span><br></pre></td></tr></table></figure>
+<p>日志会记录连接、认证、传输等详细信息。</p>
+</li>
+<li><p><strong>检查服务端状态与配置</strong>  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">systemctl status rsyncd</span><br><span class="line">rsync --daemon --config=/etc/rsyncd.conf --port=873   <span class="comment"># 测试启动</span></span><br><span class="line">netstat -tulnp | grep 873</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>客户端测试连通性与认证</strong>  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">rsync rsync_user@服务端IP::          <span class="comment"># 列出可用模块</span></span><br><span class="line">rsync rsync_user@服务端IP::backup    <span class="comment"># 测试模块访问</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="🚨-常见错误速查"><a href="#🚨-常见错误速查" class="headerlink" title="🚨 常见错误速查"></a>🚨 常见错误速查</h3><table>
+<thead>
+<tr>
+<th>现象</th>
+<th>可能原因</th>
+<th>排查命令 &#x2F; 日志位置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Connection refused</code></td>
+<td>rsyncd 未启动 &#x2F; 防火墙</td>
+<td><code>systemctl status rsyncd</code>；<code>firewall-cmd --add-service=rsync</code></td>
+</tr>
+<tr>
+<td><code>@ERROR: auth failed</code></td>
+<td>用户名或密码错误</td>
+<td>检查 <code>/etc/rsyncd.secrets</code> 格式和权限（600）</td>
+</tr>
+<tr>
+<td><code>@ERROR: Unknown module</code></td>
+<td>模块名写错或未定义</td>
+<td><code>rsync 服务端IP::</code> 查看列表；检查 <code>rsyncd.conf</code> 中模块名</td>
+</tr>
+<tr>
+<td><code>@ERROR: chdir failed</code></td>
+<td>服务端 <code>path</code> 目录不存在</td>
+<td>检查 <code>path = /data/backup</code> 目录是否创建且权限正确</td>
+</tr>
+<tr>
+<td><code>Permission denied (13)</code></td>
+<td>服务端目录权限不足</td>
+<td><code>ls -ld /data/backup</code>；确保 uid&#x2F;gid 用户有写入权限</td>
+</tr>
+<tr>
+<td><code>rsync: mkstemp failed</code></td>
+<td>文件创建权限问题</td>
+<td>服务端目录权限；SELinux 阻止（<code>setenforce 0</code> 测试）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="5-小贴士"><a href="#5-小贴士" class="headerlink" title="5. 小贴士"></a>5. 小贴士</h2><ul>
+<li>修改 <code>rsyncd.conf</code> 后执行 <code>systemctl restart rsyncd</code> 生效。</li>
+<li>密码文件权限必须为 <code>600</code>，否则 rsync 拒绝使用。</li>
+<li>生产环境建议结合 <code>hosts allow</code> 限制访问 IP。</li>
+<li>同步时注意末尾斜杠差异：<br><code>/local/dir/</code> → 同步目录<strong>内容</strong>到目标<br><code>/local/dir</code>  → 将目录<strong>本身</strong>同步到目标（产生子目录）</li>
+<li>若防火墙开启，需允许 TCP 873 端口：<code>firewall-cmd --permanent --add-port=873/tcp &amp;&amp; firewall-cmd --reload</code></li>
+</ul>
+<blockquote>
+<p> Rsync 问题都能从 <code>/var/log/rsyncd.log</code> 和 <code>rsync ::</code> 测试中找到答案。**</p>
+</blockquote>
+<hr>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/01/08/rsync%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/" data-id="cuidZdppedhLSwxOd5Ca63DyR" data-title="rsync部署、配置与排错指南" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2026/01/10/Nginx%EF%BC%9A%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前一篇</strong>
+      <div class="article-nav-title">
+        
+          Nginx部署、配置与排错指南
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2026/01/08/NFS/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">后一篇</strong>
+      <div class="article-nav-title">部署、配置与排错指南</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/04/">四月 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/01/">一月 2026</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/04/05/Tomcat%EF%BC%9A%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/">Tomcat部署、配置与排错指南</a>
+          </li>
+        
+          <li>
+            <a href="/2026/04/05/%E6%88%91%E7%AF%87%E5%8D%9A%E5%AE%A2-1/">我aaa</a>
+          </li>
+        
+          <li>
+            <a href="/2026/04/05/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2/">我的第一篇博客</a>
+          </li>
+        
+          <li>
+            <a href="/2026/01/14/HTTP/">HTTP</a>
+          </li>
+        
+          <li>
+            <a href="/2026/01/13/SSH%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/">SSH部署、配置与排错指南</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2026 anyi<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
