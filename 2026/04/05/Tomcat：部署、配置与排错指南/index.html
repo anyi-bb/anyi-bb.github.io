@@ -4,17 +4,17 @@
   <meta charset="utf-8">
   
   
-  <title>tomcat | 安逸</title>
+  <title>Tomcat：部署、配置与排错指南 | 安逸</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="从零搞定 Tomcat：部署、配置与排错指南 极简实战笔记，帮你快速上手 Tomcat 并学会自己定位问题。   1. 部署 Tomcat（以 Ubuntu &#x2F; Linux 为例）123456789101112131415161718# 安装 JDK（必需）sudo apt updatesudo apt install openjdk-11-jdk -y# 下载 Tomcat（以 9.0">
+  <meta name="description" content="1. 部署 Tomcat123456789101112131415161718# 安装 JDK（必需）sudo apt updatesudo apt install openjdk-11-jdk -y# 下载 Tomcat（以 9.0.x 为例）cd &#x2F;opt wget https:&#x2F;&#x2F;dlcdn.apache.org&#x2F;tomcat&#x2F;tomcat-9&#x2F;v9.0.98&#x2F;bin&#x2F;apache-tom">
 <meta property="og:type" content="article">
-<meta property="og:title" content="tomcat">
-<meta property="og:url" content="http://example.com/2026/04/05/tomcat/index.html">
+<meta property="og:title" content="Tomcat：部署、配置与排错指南">
+<meta property="og:url" content="http://example.com/2026/04/05/Tomcat%EF%BC%9A%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/index.html">
 <meta property="og:site_name" content="安逸">
-<meta property="og:description" content="从零搞定 Tomcat：部署、配置与排错指南 极简实战笔记，帮你快速上手 Tomcat 并学会自己定位问题。   1. 部署 Tomcat（以 Ubuntu &#x2F; Linux 为例）123456789101112131415161718# 安装 JDK（必需）sudo apt updatesudo apt install openjdk-11-jdk -y# 下载 Tomcat（以 9.0">
+<meta property="og:description" content="1. 部署 Tomcat123456789101112131415161718# 安装 JDK（必需）sudo apt updatesudo apt install openjdk-11-jdk -y# 下载 Tomcat（以 9.0.x 为例）cd &#x2F;opt wget https:&#x2F;&#x2F;dlcdn.apache.org&#x2F;tomcat&#x2F;tomcat-9&#x2F;v9.0.98&#x2F;bin&#x2F;apache-tom">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-04-04T19:41:44.000Z">
-<meta property="article:modified_time" content="2026-04-04T19:42:45.186Z">
+<meta property="article:modified_time" content="2026-04-04T19:49:18.309Z">
 <meta property="article:author" content="anyi">
 <meta name="twitter:card" content="summary">
   
@@ -73,9 +73,9 @@
 </header>
 
       <div class="outer">
-        <section id="main"><article id="post-tomcat" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+        <section id="main"><article id="post-Tomcat：部署、配置与排错指南" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2026/04/05/tomcat/" class="article-date">
+    <a href="/2026/04/05/Tomcat%EF%BC%9A%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/" class="article-date">
   <time class="dt-published" datetime="2026-04-04T19:41:44.000Z" itemprop="datePublished">2026-04-05</time>
 </a>
     
@@ -87,7 +87,7 @@
         
   
     <h1 class="p-name article-title" itemprop="headline name">
-      tomcat
+      Tomcat：部署、配置与排错指南
     </h1>
   
 
@@ -95,11 +95,8 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="从零搞定-Tomcat：部署、配置与排错指南"><a href="#从零搞定-Tomcat：部署、配置与排错指南" class="headerlink" title="从零搞定 Tomcat：部署、配置与排错指南"></a>从零搞定 Tomcat：部署、配置与排错指南</h1><blockquote>
-<p>极简实战笔记，帮你快速上手 Tomcat 并学会自己定位问题。</p>
-</blockquote>
-<hr>
-<h2 id="1-部署-Tomcat（以-Ubuntu-Linux-为例）"><a href="#1-部署-Tomcat（以-Ubuntu-Linux-为例）" class="headerlink" title="1. 部署 Tomcat（以 Ubuntu &#x2F; Linux 为例）"></a>1. 部署 Tomcat（以 Ubuntu &#x2F; Linux 为例）</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装 JDK（必需）</span></span><br><span class="line"><span class="built_in">sudo</span> apt update</span><br><span class="line"><span class="built_in">sudo</span> apt install openjdk-11-jdk -y</span><br><span class="line"></span><br><span class="line"><span class="comment"># 下载 Tomcat（以 9.0.x 为例）</span></span><br><span class="line"><span class="built_in">cd</span> /opt</span><br><span class="line"><span class="built_in">sudo</span> wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.98/bin/apache-tomcat-9.0.98.tar.gz</span><br><span class="line"><span class="built_in">sudo</span> tar -xzf apache-tomcat-9.0.98.tar.gz</span><br><span class="line"><span class="built_in">sudo</span> <span class="built_in">mv</span> apache-tomcat-9.0.98 tomcat</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置环境变量（可选）</span></span><br><span class="line"><span class="built_in">export</span> CATALINA_HOME=/opt/tomcat</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动</span></span><br><span class="line"><span class="variable">$CATALINA_HOME</span>/bin/startup.sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># 停止</span></span><br><span class="line"><span class="variable">$CATALINA_HOME</span>/bin/shutdown.sh</span><br></pre></td></tr></table></figure>
+        <hr>
+<h2 id="1-部署-Tomcat"><a href="#1-部署-Tomcat" class="headerlink" title="1. 部署 Tomcat"></a>1. 部署 Tomcat</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装 JDK（必需）</span></span><br><span class="line"><span class="built_in">sudo</span> apt update</span><br><span class="line"><span class="built_in">sudo</span> apt install openjdk-11-jdk -y</span><br><span class="line"></span><br><span class="line"><span class="comment"># 下载 Tomcat（以 9.0.x 为例）</span></span><br><span class="line"><span class="built_in">cd</span> /opt</span><br><span class="line"> wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.98/bin/apache-tomcat-9.0.98.tar.gz</span><br><span class="line"> tar -xzf apache-tomcat-9.0.98.tar.gz</span><br><span class="line"> <span class="built_in">mv</span> apache-tomcat-9.0.98 tomcat</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置环境变量（可选）</span></span><br><span class="line"><span class="built_in">export</span> CATALINA_HOME=/opt/tomcat</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动</span></span><br><span class="line"><span class="variable">$CATALINA_HOME</span>/bin/startup.sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># 停止</span></span><br><span class="line"><span class="variable">$CATALINA_HOME</span>/bin/shutdown.sh</span><br></pre></td></tr></table></figure>
 
 <p>访问 <code>http://你的服务器IP:8080</code>，看到 Tomcat 首页即成功。</p>
 <blockquote>
@@ -121,7 +118,9 @@
 <p>修改后重启 Tomcat 生效。</p>
 <hr>
 <h2 id="3-报错怎么办？去哪找问题？"><a href="#3-报错怎么办？去哪找问题？" class="headerlink" title="3. 报错怎么办？去哪找问题？"></a>3. 报错怎么办？去哪找问题？</h2><h3 id="🔍-排错三步走"><a href="#🔍-排错三步走" class="headerlink" title="🔍 排错三步走"></a>🔍 排错三步走</h3><ol>
-<li><strong>看 Tomcat 自身日志</strong>（最重要）<br>日志目录：<code>$CATALINA_HOME/logs/</code></li>
+<li><p><strong>看 Tomcat 自身日志</strong>（最重要）  </p>
+<p>日志目录：<code>$CATALINA_HOME/logs/</code></p>
+</li>
 </ol>
 <table>
 <thead>
@@ -147,7 +146,7 @@
 <td>更详细的历史记录</td>
 </tr>
 </tbody></table>
-   <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">tail</span> -f <span class="variable">$CATALINA_HOME</span>/logs/catalina.out</span><br></pre></td></tr></table></figure>
+   <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">tail</span> -f <span class="variable">$CATALINA_HOME</span>/logs/catalina.out catalina_home</span><br></pre></td></tr></table></figure>
 
 <ol start="2">
 <li><p><strong>检查应用部署日志</strong>  </p>
@@ -207,7 +206,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/04/05/tomcat/" data-id="cuid8ig_n9q7stxdhgB-ofEKJ" data-title="tomcat" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="http://example.com/2026/04/05/Tomcat%EF%BC%9A%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/" data-id="cuidCKkYkcS0OhOWjQOwuYeKO" data-title="Tomcat：部署、配置与排错指南" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
@@ -258,7 +257,7 @@
       <ul>
         
           <li>
-            <a href="/2026/04/05/tomcat/">tomcat</a>
+            <a href="/2026/04/05/Tomcat%EF%BC%9A%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/">Tomcat：部署、配置与排错指南</a>
           </li>
         
           <li>
