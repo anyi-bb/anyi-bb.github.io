@@ -1,0 +1,246 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>rsync部署、配置与排错指南 | 安逸</title><meta name="author" content="anyi"><meta name="copyright" content="anyi"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="监听端口873  1. 部署 Rsync（服务端 &amp; 客户端）安装（两端均可执行）1yum install -y rsync  服务端（接收文件的机器）启动守护进程123456789# 编辑配置（见下节）vim &#x2F;etc&#x2F;rsyncd.conf# 启动服务systemctl start rsyncdsystemctl enable rsyncd# 检查状态systemctl status">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rsync部署、配置与排错指南">
+<meta property="og:url" content="https://anyi-bb.github.io/2025/10/08/rsync%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/index.html">
+<meta property="og:site_name" content="安逸">
+<meta property="og:description" content="监听端口873  1. 部署 Rsync（服务端 &amp; 客户端）安装（两端均可执行）1yum install -y rsync  服务端（接收文件的机器）启动守护进程123456789# 编辑配置（见下节）vim &#x2F;etc&#x2F;rsyncd.conf# 启动服务systemctl start rsyncdsystemctl enable rsyncd# 检查状态systemctl status">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://anyi-bb.github.io/img/butterfly-icon.png">
+<meta property="article:published_time" content="2025-10-08T15:27:09.000Z">
+<meta property="article:modified_time" content="2026-04-07T14:11:26.462Z">
+<meta property="article:author" content="anyi">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://anyi-bb.github.io/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "rsync部署、配置与排错指南",
+  "url": "https://anyi-bb.github.io/2025/10/08/rsync%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/",
+  "image": "https://anyi-bb.github.io/img/butterfly-icon.png",
+  "datePublished": "2025-10-08T15:27:09.000Z",
+  "dateModified": "2026-04-07T14:11:26.462Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "anyi",
+      "url": "https://anyi-bb.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://anyi-bb.github.io/2025/10/08/rsync%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'rsync部署、配置与排错指南',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.1"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">安逸</span></a><a class="nav-page-title" href="/"><span class="site-name">rsync部署、配置与排错指南</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">rsync部署、配置与排错指南</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-10-08T15:27:09.000Z" title="发表于 2025-10-08 23:27:09">2025-10-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-04-07T14:11:26.462Z" title="更新于 2026-04-07 22:11:26">2026-04-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%9C%8D%E5%8A%A1/">服务</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>监听端口873</p>
+<hr>
+<h2 id="1-部署-Rsync（服务端-客户端）"><a href="#1-部署-Rsync（服务端-客户端）" class="headerlink" title="1. 部署 Rsync（服务端 &amp; 客户端）"></a>1. 部署 Rsync（服务端 &amp; 客户端）</h2><h3 id="安装（两端均可执行）"><a href="#安装（两端均可执行）" class="headerlink" title="安装（两端均可执行）"></a>安装（两端均可执行）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y rsync</span><br></pre></td></tr></table></figure>
+
+<h3 id="服务端（接收文件的机器）启动守护进程"><a href="#服务端（接收文件的机器）启动守护进程" class="headerlink" title="服务端（接收文件的机器）启动守护进程"></a>服务端（接收文件的机器）启动守护进程</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 编辑配置（见下节）</span></span><br><span class="line">vim /etc/rsyncd.conf</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动服务</span></span><br><span class="line">systemctl start rsyncd</span><br><span class="line">systemctl <span class="built_in">enable</span> rsyncd</span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查状态</span></span><br><span class="line">systemctl status rsyncd</span><br></pre></td></tr></table></figure>
+
+<h3 id="客户端（发送文件的机器）无需启动服务，直接执行命令"><a href="#客户端（发送文件的机器）无需启动服务，直接执行命令" class="headerlink" title="客户端（发送文件的机器）无需启动服务，直接执行命令"></a>客户端（发送文件的机器）无需启动服务，直接执行命令</h3><hr>
+<h2 id="2-主配置（服务端-etc-rsyncd-conf）"><a href="#2-主配置（服务端-etc-rsyncd-conf）" class="headerlink" title="2. 主配置（服务端 /etc/rsyncd.conf）"></a>2. 主配置（服务端 <code>/etc/rsyncd.conf</code>）</h2><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 全局配置</span></span><br><span class="line"><span class="attr">uid</span> = root                     <span class="comment"># rsync 进程使用的用户身份（拥有文件权限）</span></span><br><span class="line"><span class="attr">gid</span> = root                     <span class="comment"># rsync 进程使用的组身份</span></span><br><span class="line">use <span class="attr">chroot</span> = <span class="literal">no</span>                <span class="comment"># 是否将进程禁锢在模块 path 目录下（no 可避免符号链接问题）</span></span><br><span class="line">max <span class="attr">connections</span> = <span class="number">10</span>           <span class="comment"># 最大并发连接数</span></span><br><span class="line">log <span class="attr">file</span> = /var/log/rsyncd.log <span class="comment"># 服务端日志文件路径</span></span><br><span class="line">pid <span class="attr">file</span> = /var/run/rsyncd.pid <span class="comment"># 进程 PID 文件路径</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 模块定义</span></span><br><span class="line"><span class="section">[backup]</span>                       <span class="comment"># 模块名称（客户端通过 ::backup 访问）</span></span><br><span class="line">    <span class="attr">path</span> = /data/backup        <span class="comment"># 共享的实际目录路径</span></span><br><span class="line">    <span class="attr">comment</span> = Backup Directory <span class="comment"># 模块描述信息（客户端列表时显示）</span></span><br><span class="line">    read <span class="attr">only</span> = <span class="literal">no</span>             <span class="comment"># 允许客户端写入（no 表示可读写）</span></span><br><span class="line">    auth <span class="attr">users</span> = rsync_user    <span class="comment"># 允许连接的用户名（需配合 secrets file）</span></span><br><span class="line">    secrets <span class="attr">file</span> = /etc/rsyncd.secrets  <span class="comment"># 存储用户名:密码的文件（权限需 600）</span></span><br><span class="line">    hosts <span class="attr">allow</span> = <span class="number">192.168</span>.<span class="number">1.0</span>/<span class="number">24</span>        <span class="comment"># 允许访问的 IP 网段</span></span><br><span class="line">    hosts <span class="attr">deny</span> = *                      <span class="comment"># 拒绝其他所有 IP</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>创建密钥文件</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">&quot;rsync_user:yourpassword&quot;</span> &gt; /etc/rsyncd.secrets</span><br><span class="line"><span class="built_in">chmod</span> 600 /etc/rsyncd.secrets</span><br></pre></td></tr></table></figure>
+
+<p><strong>启动服务</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl restart rsyncd</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="3-常用命令（客户端推送-拉取）"><a href="#3-常用命令（客户端推送-拉取）" class="headerlink" title="3. 常用命令（客户端推送&#x2F;拉取）"></a>3. 常用命令（客户端推送&#x2F;拉取）</h2><h3 id="推送到服务端"><a href="#推送到服务端" class="headerlink" title="推送到服务端"></a>推送到服务端</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rsync -avz --delete /local/dir/ rsync_user@服务端IP::backup</span><br></pre></td></tr></table></figure>
+
+<h3 id="从服务端拉取"><a href="#从服务端拉取" class="headerlink" title="从服务端拉取"></a>从服务端拉取</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rsync -avz rsync_user@服务端IP::backup /local/dir/</span><br></pre></td></tr></table></figure>
+
+<h3 id="本地同步（无需服务端）"><a href="#本地同步（无需服务端）" class="headerlink" title="本地同步（无需服务端）"></a>本地同步（无需服务端）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rsync -av /src/ /dst/</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="4-报错怎么办？去哪找问题？"><a href="#4-报错怎么办？去哪找问题？" class="headerlink" title="4. 报错怎么办？去哪找问题？"></a>4. 报错怎么办？去哪找问题？</h2><h3 id="🔍-排错三步走"><a href="#🔍-排错三步走" class="headerlink" title="🔍 排错三步走"></a>🔍 排错三步走</h3><ol>
+<li><p><strong>看服务端日志</strong>  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">tail</span> -f /var/log/rsyncd.log</span><br></pre></td></tr></table></figure>
+<p>日志会记录连接、认证、传输等详细信息。</p>
+</li>
+<li><p><strong>检查服务端状态与配置</strong>  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">systemctl status rsyncd</span><br><span class="line">rsync --daemon --config=/etc/rsyncd.conf --port=873   <span class="comment"># 测试启动</span></span><br><span class="line">netstat -tulnp | grep 873</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>客户端测试连通性与认证</strong>  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">rsync rsync_user@服务端IP::          <span class="comment"># 列出可用模块</span></span><br><span class="line">rsync rsync_user@服务端IP::backup    <span class="comment"># 测试模块访问</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="🚨-常见错误速查"><a href="#🚨-常见错误速查" class="headerlink" title="🚨 常见错误速查"></a>🚨 常见错误速查</h3><table>
+<thead>
+<tr>
+<th>现象</th>
+<th>可能原因</th>
+<th>排查命令 &#x2F; 日志位置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Connection refused</code></td>
+<td>rsyncd 未启动 &#x2F; 防火墙</td>
+<td><code>systemctl status rsyncd</code>；<code>firewall-cmd --add-service=rsync</code></td>
+</tr>
+<tr>
+<td><code>@ERROR: auth failed</code></td>
+<td>用户名或密码错误</td>
+<td>检查 <code>/etc/rsyncd.secrets</code> 格式和权限（600）</td>
+</tr>
+<tr>
+<td><code>@ERROR: Unknown module</code></td>
+<td>模块名写错或未定义</td>
+<td><code>rsync 服务端IP::</code> 查看列表；检查 <code>rsyncd.conf</code> 中模块名</td>
+</tr>
+<tr>
+<td><code>@ERROR: chdir failed</code></td>
+<td>服务端 <code>path</code> 目录不存在</td>
+<td>检查 <code>path = /data/backup</code> 目录是否创建且权限正确</td>
+</tr>
+<tr>
+<td><code>Permission denied (13)</code></td>
+<td>服务端目录权限不足</td>
+<td><code>ls -ld /data/backup</code>；确保 uid&#x2F;gid 用户有写入权限</td>
+</tr>
+<tr>
+<td><code>rsync: mkstemp failed</code></td>
+<td>文件创建权限问题</td>
+<td>服务端目录权限；SELinux 阻止（<code>setenforce 0</code> 测试）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="5-小贴士"><a href="#5-小贴士" class="headerlink" title="5. 小贴士"></a>5. 小贴士</h2><ul>
+<li>修改 <code>rsyncd.conf</code> 后执行 <code>systemctl restart rsyncd</code> 生效。</li>
+<li>密码文件权限必须为 <code>600</code>，否则 rsync 拒绝使用。</li>
+<li>生产环境建议结合 <code>hosts allow</code> 限制访问 IP。</li>
+<li>同步时注意末尾斜杠差异：<br><code>/local/dir/</code> → 同步目录<strong>内容</strong>到目标<br><code>/local/dir</code>  → 将目录<strong>本身</strong>同步到目标（产生子目录）</li>
+<li>若防火墙开启，需允许 TCP 873 端口：<code>firewall-cmd --permanent --add-port=873/tcp &amp;&amp; firewall-cmd --reload</code></li>
+</ul>
+<blockquote>
+<p> Rsync 问题都能从 <code>/var/log/rsyncd.log</code> 和 <code>rsync ::</code> 测试中找到答案。**</p>
+</blockquote>
+<hr>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://anyi-bb.github.io">anyi</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://anyi-bb.github.io/2025/10/08/rsync%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/">https://anyi-bb.github.io/2025/10/08/rsync%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://anyi-bb.github.io" target="_blank">安逸</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/11/05/%E8%B4%9F%E8%BD%BD+keepalived+redis/" title="负载+keepalived+redis"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">负载+keepalived+redis</div></div><div class="info-2"><div class="info-item-1">最后成果  1.安装nginx+php1234567891011121314151.安装nginx[root@web01 ~]# yum -y install nginx2.安装php[root@web01 ~]# yum -y install php php-bcmath php-cli php-common php-devel php-embedded php-fpm php-gd php-intl php-mbstring php-mysqlnd php-opcache php-pdo   php-process php-xml php-json3.配置php监听端口[root@web01 ~]# grep 127.0.0.1:9000 /etc/php-fpm.d/www.conf  -n38:listen = 127.0.0.1:90004.启动php[root@web01 ~]# systemctl start php-fpm[root@web01 ~]# systemctl enable php-fpm  2.部署wordpress12345678910111213...</div></div></div></a><a class="pagination-related" href="/2025/10/08/nfs%E9%83%A8%E7%BD%B2%E3%80%81%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8E%92%E9%94%99%E6%8C%87%E5%8D%97/" title="nfs部署、配置与排错指南"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">nfs部署、配置与排错指南</div></div><div class="info-2"><div class="info-item-1"> 1. 部署 NFS（服务端 &amp; 客户端）服务端（共享目录的机器）12345678910# 安装 NFS 服务yum install -y nfs-utils rpcbind# 启动并开机自启systemctl start rpcbind nfs-serversystemctl enable rpcbind nfs-server# 创建共享目录mkdir -p /data/sharechmod 755 /data/share  客户端（挂载使用的机器）12345# 安装 NFS 客户端工具yum install -y nfs-utils# 创建本地挂载点mkdir -p /mnt/nfs   2. 主配置（服务端） 配置文件：/etc/exports   格式：共享目录 客户端IP/网段(参数)  示例 /etc/exports： 1/data/share 192.168.1.0/24(rw,sync,no_root_squash)     常用参数 含义    rw 读写   ro 只读   sync 同步写入（安全）   async 异步写入（性能）   no_roo...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">anyi</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">17</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://www.deepseek.com"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E9%83%A8%E7%BD%B2-Rsync%EF%BC%88%E6%9C%8D%E5%8A%A1%E7%AB%AF-%E5%AE%A2%E6%88%B7%E7%AB%AF%EF%BC%89"><span class="toc-number">1.</span> <span class="toc-text">1. 部署 Rsync（服务端 &amp; 客户端）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E8%A3%85%EF%BC%88%E4%B8%A4%E7%AB%AF%E5%9D%87%E5%8F%AF%E6%89%A7%E8%A1%8C%EF%BC%89"><span class="toc-number">1.1.</span> <span class="toc-text">安装（两端均可执行）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E7%AB%AF%EF%BC%88%E6%8E%A5%E6%94%B6%E6%96%87%E4%BB%B6%E7%9A%84%E6%9C%BA%E5%99%A8%EF%BC%89%E5%90%AF%E5%8A%A8%E5%AE%88%E6%8A%A4%E8%BF%9B%E7%A8%8B"><span class="toc-number">1.2.</span> <span class="toc-text">服务端（接收文件的机器）启动守护进程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%EF%BC%88%E5%8F%91%E9%80%81%E6%96%87%E4%BB%B6%E7%9A%84%E6%9C%BA%E5%99%A8%EF%BC%89%E6%97%A0%E9%9C%80%E5%90%AF%E5%8A%A8%E6%9C%8D%E5%8A%A1%EF%BC%8C%E7%9B%B4%E6%8E%A5%E6%89%A7%E8%A1%8C%E5%91%BD%E4%BB%A4"><span class="toc-number">1.3.</span> <span class="toc-text">客户端（发送文件的机器）无需启动服务，直接执行命令</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E4%B8%BB%E9%85%8D%E7%BD%AE%EF%BC%88%E6%9C%8D%E5%8A%A1%E7%AB%AF-etc-rsyncd-conf%EF%BC%89"><span class="toc-number">2.</span> <span class="toc-text">2. 主配置（服务端 &#x2F;etc&#x2F;rsyncd.conf）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%EF%BC%88%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%8E%A8%E9%80%81-%E6%8B%89%E5%8F%96%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">3. 常用命令（客户端推送&#x2F;拉取）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A8%E9%80%81%E5%88%B0%E6%9C%8D%E5%8A%A1%E7%AB%AF"><span class="toc-number">3.1.</span> <span class="toc-text">推送到服务端</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%8B%89%E5%8F%96"><span class="toc-number">3.2.</span> <span class="toc-text">从服务端拉取</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E5%90%8C%E6%AD%A5%EF%BC%88%E6%97%A0%E9%9C%80%E6%9C%8D%E5%8A%A1%E7%AB%AF%EF%BC%89"><span class="toc-number">3.3.</span> <span class="toc-text">本地同步（无需服务端）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E6%8A%A5%E9%94%99%E6%80%8E%E4%B9%88%E5%8A%9E%EF%BC%9F%E5%8E%BB%E5%93%AA%E6%89%BE%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="toc-number">4.</span> <span class="toc-text">4. 报错怎么办？去哪找问题？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%8D-%E6%8E%92%E9%94%99%E4%B8%89%E6%AD%A5%E8%B5%B0"><span class="toc-number">4.1.</span> <span class="toc-text">🔍 排错三步走</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%9A%A8-%E5%B8%B8%E8%A7%81%E9%94%99%E8%AF%AF%E9%80%9F%E6%9F%A5"><span class="toc-number">4.2.</span> <span class="toc-text">🚨 常见错误速查</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%B0%8F%E8%B4%B4%E5%A3%AB"><span class="toc-number">5.</span> <span class="toc-text">5. 小贴士</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/02/05/keepalived%E9%83%A8%E7%BD%B2%E4%B8%8E%E6%A6%82%E5%BF%B5/" title="keepalived部署与概念">keepalived部署与概念</a><time datetime="2026-02-05T12:29:05.000Z" title="发表于 2026-02-05 20:29:05">2026-02-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/12/05/%E5%86%85%E9%83%A8-Web-%E6%9C%8D%E5%8A%A1%E9%AB%98%E5%8F%AF%E7%94%A8%E9%83%A8%E7%BD%B2/" title="内部 Web 服务高可用部署">内部 Web 服务高可用部署</a><time datetime="2025-12-05T14:12:48.000Z" title="发表于 2025-12-05 22:12:48">2025-12-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/12/05/mysql%E4%B8%BB%E4%BB%8E%E9%85%8D%E7%BD%AE/" title="mysql主从配置">mysql主从配置</a><time datetime="2025-12-05T12:52:58.000Z" title="发表于 2025-12-05 20:52:58">2025-12-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/12/05/mysql%E6%9C%8D%E5%8A%A1%E8%AF%AD%E5%8F%A5%E5%BA%94%E7%94%A8/" title="mysql主从配置">mysql主从配置</a><time datetime="2025-12-05T12:52:58.000Z" title="发表于 2025-12-05 20:52:58">2025-12-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/12/05/mysql%E5%AD%98%E5%82%A8%E6%9C%8D%E5%8A%A1/" title="mysql存储服务">mysql存储服务</a><time datetime="2025-12-05T12:33:38.000Z" title="发表于 2025-12-05 20:33:38">2025-12-05</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By anyi</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.1</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

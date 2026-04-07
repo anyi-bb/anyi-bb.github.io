@@ -1,0 +1,333 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>内部 Web 服务高可用部署 | 安逸</title><meta name="author" content="anyi"><meta name="copyright" content="anyi"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="1. 项目概述中小型企业内部 Web 服务的生产环境，在虚拟机环境中搭建一套高可用、负载均衡的 LNMP 架构。实现：  两台 Web 服务器提供相同内容 Nginx 反向代理实现负载均衡 Keepalived 提供 VIP 高可用，主备自动切换 Ansible 实现一键自动化部署  2. 硬件环境   设备类型 配置建议 数量 用途    物理机&#x2F;笔记本 8GB+ 内存，50GB+ 空">
+<meta property="og:type" content="article">
+<meta property="og:title" content="内部 Web 服务高可用部署">
+<meta property="og:url" content="https://anyi-bb.github.io/2025/12/05/%E5%86%85%E9%83%A8-Web-%E6%9C%8D%E5%8A%A1%E9%AB%98%E5%8F%AF%E7%94%A8%E9%83%A8%E7%BD%B2/index.html">
+<meta property="og:site_name" content="安逸">
+<meta property="og:description" content="1. 项目概述中小型企业内部 Web 服务的生产环境，在虚拟机环境中搭建一套高可用、负载均衡的 LNMP 架构。实现：  两台 Web 服务器提供相同内容 Nginx 反向代理实现负载均衡 Keepalived 提供 VIP 高可用，主备自动切换 Ansible 实现一键自动化部署  2. 硬件环境   设备类型 配置建议 数量 用途    物理机&#x2F;笔记本 8GB+ 内存，50GB+ 空">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://anyi-bb.github.io/img/butterfly-icon.png">
+<meta property="article:published_time" content="2025-12-05T14:12:48.000Z">
+<meta property="article:modified_time" content="2026-04-07T14:12:18.741Z">
+<meta property="article:author" content="anyi">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://anyi-bb.github.io/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "内部 Web 服务高可用部署",
+  "url": "https://anyi-bb.github.io/2025/12/05/%E5%86%85%E9%83%A8-Web-%E6%9C%8D%E5%8A%A1%E9%AB%98%E5%8F%AF%E7%94%A8%E9%83%A8%E7%BD%B2/",
+  "image": "https://anyi-bb.github.io/img/butterfly-icon.png",
+  "datePublished": "2025-12-05T14:12:48.000Z",
+  "dateModified": "2026-04-07T14:12:18.741Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "anyi",
+      "url": "https://anyi-bb.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://anyi-bb.github.io/2025/12/05/%E5%86%85%E9%83%A8-Web-%E6%9C%8D%E5%8A%A1%E9%AB%98%E5%8F%AF%E7%94%A8%E9%83%A8%E7%BD%B2/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '内部 Web 服务高可用部署',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.1"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">安逸</span></a><a class="nav-page-title" href="/"><span class="site-name">内部 Web 服务高可用部署</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">内部 Web 服务高可用部署</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-12-05T14:12:48.000Z" title="发表于 2025-12-05 22:12:48">2025-12-05</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-04-07T14:12:18.741Z" title="更新于 2026-04-07 22:12:18">2026-04-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%A1%88%E4%BE%8B/">案例</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="1-项目概述"><a href="#1-项目概述" class="headerlink" title="1. 项目概述"></a>1. 项目概述</h2><p>中小型企业内部 Web 服务的生产环境，在虚拟机环境中搭建一套高可用、负载均衡的 LNMP 架构。实现：</p>
+<ul>
+<li>两台 Web 服务器提供相同内容</li>
+<li>Nginx 反向代理实现负载均衡</li>
+<li>Keepalived 提供 VIP 高可用，主备自动切换</li>
+<li>Ansible 实现一键自动化部署</li>
+</ul>
+<h2 id="2-硬件环境"><a href="#2-硬件环境" class="headerlink" title="2. 硬件环境"></a>2. 硬件环境</h2><table>
+<thead>
+<tr>
+<th>设备类型</th>
+<th>配置建议</th>
+<th>数量</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>物理机&#x2F;笔记本</td>
+<td>8GB+ 内存，50GB+ 空闲磁盘</td>
+<td>1</td>
+<td>运行虚拟机</td>
+</tr>
+<tr>
+<td>虚拟机</td>
+<td>2 核 CPU，2GB 内存，20GB 硬盘</td>
+<td>4</td>
+<td>模拟服务器节点（见下表）</td>
+</tr>
+</tbody></table>
+<h3 id="2-1-虚拟机规划（使用-VMware-Workstation-或-VirtualBox）"><a href="#2-1-虚拟机规划（使用-VMware-Workstation-或-VirtualBox）" class="headerlink" title="2.1 虚拟机规划（使用 VMware Workstation 或 VirtualBox）"></a>2.1 虚拟机规划（使用 VMware Workstation 或 VirtualBox）</h3><table>
+<thead>
+<tr>
+<th>主机名</th>
+<th>IP 地址</th>
+<th>角色</th>
+<th>操作系统</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>lb01</td>
+<td>192.168.10.10</td>
+<td>主负载均衡器 + Keepalived</td>
+<td>CentOS 7.9</td>
+</tr>
+<tr>
+<td>lb02</td>
+<td>192.168.10.11</td>
+<td>备负载均衡器 + Keepalived</td>
+<td>CentOS 7.9</td>
+</tr>
+<tr>
+<td>web01</td>
+<td>192.168.10.20</td>
+<td>后端 Web 服务器 1</td>
+<td>CentOS 7.9</td>
+</tr>
+<tr>
+<td>web02</td>
+<td>192.168.10.21</td>
+<td>后端 Web 服务器 2</td>
+<td>CentOS 7.9</td>
+</tr>
+<tr>
+<td>db01</td>
+<td>192.168.10.30</td>
+<td>MySQL 数据库服务器</td>
+<td>CentOS 7.9</td>
+</tr>
+</tbody></table>
+<h2 id="3-软件环境及版本"><a href="#3-软件环境及版本" class="headerlink" title="3. 软件环境及版本"></a>3. 软件环境及版本</h2><table>
+<thead>
+<tr>
+<th>软件</th>
+<th>版本</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CentOS</td>
+<td>7.9 (Minimal)</td>
+<td>操作系统</td>
+</tr>
+<tr>
+<td>Nginx</td>
+<td>1.20.1</td>
+<td>负载均衡器 + Web 服务器</td>
+</tr>
+<tr>
+<td>MySQL</td>
+<td>5.7.40</td>
+<td>数据库</td>
+</tr>
+<tr>
+<td>PHP</td>
+<td>7.4.33</td>
+<td>PHP-FPM，运行动态页面</td>
+</tr>
+<tr>
+<td>Keepalived</td>
+<td>1.3.5</td>
+<td>高可用 VIP 管理</td>
+</tr>
+<tr>
+<td>Ansible</td>
+<td>2.9.27 (控制端)</td>
+<td>自动化部署（可在任意节点执行）</td>
+</tr>
+</tbody></table>
+<h2 id="4-网络拓扑"><a href="#4-网络拓扑" class="headerlink" title="4. 网络拓扑"></a>4. 网络拓扑</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">               ┌─────────────┐</span><br><span class="line">               │   客户端     │</span><br><span class="line">               └──────┬──────┘</span><br><span class="line">                      │</span><br><span class="line">               ┌──────▼──────┐</span><br><span class="line">               │   VIP: 192.168.10.100  │</span><br><span class="line">               └──────┬──────┘</span><br><span class="line">                      │</span><br><span class="line">       ┌──────────────┼──────────────┐</span><br><span class="line">       │              │              │</span><br><span class="line">  ┌────▼────┐     ┌────▼────┐</span><br><span class="line">  │  lb01   │     │  lb02   │  (Keepalived 主备)</span><br><span class="line">  │ 10.10   │     │ 10.11   │</span><br><span class="line">  └────┬────┘     └────┬────┘</span><br><span class="line">       │               │</span><br><span class="line">       └───────┬───────┘</span><br><span class="line">               │ (轮询转发)</span><br><span class="line">    ┌──────────┼──────────┐</span><br><span class="line">    │          │          │</span><br><span class="line">┌───▼───┐  ┌───▼───┐  ┌───▼───┐</span><br><span class="line">│ web01 │  │ web02 │  │ db01  │</span><br><span class="line">│ 10.20 │  │ 10.21 │  │ 10.30 │</span><br><span class="line">└───────┘  └───────┘  └───────┘</span><br></pre></td></tr></table></figure>
+
+<h2 id="5-部署步骤（手动版，供理解流程）"><a href="#5-部署步骤（手动版，供理解流程）" class="headerlink" title="5. 部署步骤（手动版，供理解流程）"></a>5. 部署步骤（手动版，供理解流程）</h2><h3 id="5-1-基础环境准备（所有节点执行）"><a href="#5-1-基础环境准备（所有节点执行）" class="headerlink" title="5.1 基础环境准备（所有节点执行）"></a>5.1 基础环境准备（所有节点执行）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 关闭防火墙和 SELinux</span></span><br><span class="line">systemctl stop firewalld</span><br><span class="line">systemctl <span class="built_in">disable</span> firewalld</span><br><span class="line">setenforce 0</span><br><span class="line">sed -i <span class="string">&#x27;s/SELINUX=enforcing/SELINUX=disabled/g&#x27;</span> /etc/selinux/config</span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置 hosts 解析</span></span><br><span class="line"><span class="built_in">cat</span> &gt;&gt; /etc/hosts &lt;&lt; <span class="string">EOF</span></span><br><span class="line"><span class="string">192.168.10.10 lb01</span></span><br><span class="line"><span class="string">192.168.10.11 lb02</span></span><br><span class="line"><span class="string">192.168.10.20 web01</span></span><br><span class="line"><span class="string">192.168.10.21 web02</span></span><br><span class="line"><span class="string">192.168.10.30 db01</span></span><br><span class="line"><span class="string">EOF</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-数据库节点（db01）"><a href="#5-2-数据库节点（db01）" class="headerlink" title="5.2 数据库节点（db01）"></a>5.2 数据库节点（db01）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装 MySQL 5.7</span></span><br><span class="line">rpm -Uvh https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm</span><br><span class="line">yum install -y mysql-community-server</span><br><span class="line">systemctl start mysqld &amp;&amp; systemctl <span class="built_in">enable</span> mysqld</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取临时密码</span></span><br><span class="line">grep <span class="string">&#x27;temporary password&#x27;</span> /var/log/mysqld.log</span><br><span class="line">mysql_secure_installation  <span class="comment"># 按提示设置 root 密码</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建测试库和用户</span></span><br><span class="line">mysql -uroot -p</span><br><span class="line">CREATE DATABASE webapp;</span><br><span class="line">CREATE USER <span class="string">&#x27;appuser&#x27;</span>@<span class="string">&#x27;192.168.10.%&#x27;</span> IDENTIFIED BY <span class="string">&#x27;AppPass123!&#x27;</span>;</span><br><span class="line">GRANT ALL PRIVILEGES ON webapp.* TO <span class="string">&#x27;appuser&#x27;</span>@<span class="string">&#x27;192.168.10.%&#x27;</span>;</span><br><span class="line">FLUSH PRIVILEGES;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-3-Web-节点（web01-web02）"><a href="#5-3-Web-节点（web01-web02）" class="headerlink" title="5.3 Web 节点（web01, web02）"></a>5.3 Web 节点（web01, web02）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装 Nginx, PHP-FPM</span></span><br><span class="line">yum install -y epel-release</span><br><span class="line">yum install -y nginx php-fpm php-mysqlnd php-json php-gd</span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置 PHP-FPM 监听 socket 或 9000 端口</span></span><br><span class="line">sed -i <span class="string">&#x27;s/listen = 127.0.0.1:9000/listen = 9000/g&#x27;</span> /etc/php-fpm.d/www.conf</span><br><span class="line">systemctl start php-fpm &amp;&amp; systemctl <span class="built_in">enable</span> php-fpm</span><br><span class="line"></span><br><span class="line"><span class="comment"># 部署测试 PHP 程序（简单的会话保持测试）</span></span><br><span class="line"><span class="built_in">cat</span> &gt; /usr/share/nginx/html/index.php &lt;&lt; <span class="string">&#x27;EOF&#x27;</span></span><br><span class="line">&lt;?php</span><br><span class="line"><span class="variable">$conn</span> = new mysqli(<span class="string">&#x27;192.168.10.30&#x27;</span>, <span class="string">&#x27;appuser&#x27;</span>, <span class="string">&#x27;AppPass123!&#x27;</span>, <span class="string">&#x27;webapp&#x27;</span>);</span><br><span class="line"><span class="keyword">if</span> (<span class="variable">$conn</span>-&gt;connect_error) die(<span class="string">&quot;DB连接失败: &quot;</span> . <span class="variable">$conn</span>-&gt;connect_error);</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;&lt;h1&gt;Web Server: &lt;?php echo gethostname(); ?&gt;&lt;/h1&gt;&quot;</span>;</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;&lt;h3&gt;数据库时间: &quot;</span> . <span class="variable">$conn</span>-&gt;query(<span class="string">&quot;select now() as t&quot;</span>)-&gt;fetch_assoc()[<span class="string">&#x27;t&#x27;</span>] . <span class="string">&quot;&lt;/h3&gt;&quot;</span>;</span><br><span class="line">?&gt;</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改 Nginx 默认配置，支持 PHP</span></span><br><span class="line"><span class="built_in">cat</span> &gt; /etc/nginx/conf.d/default.conf &lt;&lt; <span class="string">&#x27;EOF&#x27;</span></span><br><span class="line">server &#123;</span><br><span class="line">    listen 80;</span><br><span class="line">    server_name _;</span><br><span class="line">    root /usr/share/nginx/html;</span><br><span class="line">    index index.php index.html;</span><br><span class="line">    location ~ \.php$ &#123;</span><br><span class="line">        fastcgi_pass 127.0.0.1:9000;</span><br><span class="line">        fastcgi_index index.php;</span><br><span class="line">        include fastcgi_params;</span><br><span class="line">        fastcgi_param SCRIPT_FILENAME $document_root<span class="variable">$fastcgi_script_name</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br><span class="line">systemctl start nginx &amp;&amp; systemctl <span class="built_in">enable</span> nginx</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-4-负载均衡节点（lb01-lb02）"><a href="#5-4-负载均衡节点（lb01-lb02）" class="headerlink" title="5.4 负载均衡节点（lb01, lb02）"></a>5.4 负载均衡节点（lb01, lb02）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装 Nginx（不装 PHP）</span></span><br><span class="line">yum install -y nginx</span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置 upstream 和后端健康检查</span></span><br><span class="line"><span class="built_in">cat</span> &gt; /etc/nginx/conf.d/upstream.conf &lt;&lt; <span class="string">&#x27;EOF&#x27;</span></span><br><span class="line">upstream backend &#123;</span><br><span class="line">    server 192.168.10.20:80 weight=1 max_fails=3 fail_timeout=30s;</span><br><span class="line">    server 192.168.10.21:80 weight=1 max_fails=3 fail_timeout=30s;</span><br><span class="line">&#125;</span><br><span class="line">server &#123;</span><br><span class="line">    listen 80;</span><br><span class="line">    server_name _;</span><br><span class="line">    location / &#123;</span><br><span class="line">        proxy_pass http://backend;</span><br><span class="line">        proxy_set_header Host <span class="variable">$host</span>;</span><br><span class="line">        proxy_set_header X-Real-IP <span class="variable">$remote_addr</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br><span class="line">systemctl start nginx &amp;&amp; systemctl <span class="built_in">enable</span> nginx</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装 Keepalived（两台都要）</span></span><br><span class="line">yum install -y keepalived</span><br></pre></td></tr></table></figure>
+
+<h4 id="主负载均衡器（lb01）Keepalived-配置"><a href="#主负载均衡器（lb01）Keepalived-配置" class="headerlink" title="主负载均衡器（lb01）Keepalived 配置"></a>主负载均衡器（lb01）Keepalived 配置</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> &gt; /etc/keepalived/keepalived.conf &lt;&lt; <span class="string">&#x27;EOF&#x27;</span></span><br><span class="line">! Configuration File <span class="keyword">for</span> keepalived</span><br><span class="line">global_defs &#123;</span><br><span class="line">   router_id LVS_DEVEL</span><br><span class="line">&#125;</span><br><span class="line">vrrp_instance VI_1 &#123;</span><br><span class="line">    state MASTER</span><br><span class="line">    interface eth0          <span class="comment"># 改成你的网卡名</span></span><br><span class="line">    virtual_router_id 51</span><br><span class="line">    priority 100</span><br><span class="line">    advert_int 1</span><br><span class="line">    authentication &#123;</span><br><span class="line">        auth_type PASS</span><br><span class="line">        auth_pass 123456</span><br><span class="line">    &#125;</span><br><span class="line">    virtual_ipaddress &#123;</span><br><span class="line">        192.168.10.100/24 dev eth0 label eth0:0</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+
+<h4 id="备负载均衡器（lb02）配置"><a href="#备负载均衡器（lb02）配置" class="headerlink" title="备负载均衡器（lb02）配置"></a>备负载均衡器（lb02）配置</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 将 state 改为 BACKUP，priority 改为 90</span></span><br><span class="line"><span class="comment"># 其余相同</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="5-5-启动高可用"><a href="#5-5-启动高可用" class="headerlink" title="5.5 启动高可用"></a>5.5 启动高可用</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 两台负载均衡器执行</span></span><br><span class="line">systemctl start keepalived &amp;&amp; systemctl <span class="built_in">enable</span> keepalived</span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查 VIP 是否在 lb01 上</span></span><br><span class="line">ip addr show eth0</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-6-验证"><a href="#5-6-验证" class="headerlink" title="5.6 验证"></a>5.6 验证</h3><ul>
+<li>浏览器访问 <code>http://192.168.10.100/index.php</code>，页面显示主机名（web01 或 web02）</li>
+<li>手动停止 lb01 的 keepalived：<code>systemctl stop keepalived</code>，VIP 自动漂移到 lb02，服务不中断</li>
+<li>停止任意一台 web 节点的 nginx，负载均衡自动将请求转发到另一台</li>
+</ul>
+<h2 id="6-Ansible-自动化部署（简化版）"><a href="#6-Ansible-自动化部署（简化版）" class="headerlink" title="6. Ansible 自动化部署（简化版）"></a>6. Ansible 自动化部署（简化版）</h2><blockquote>
+<p>控制机（例如你的笔记本或其中一台虚拟机）需要安装 Ansible，并配置好 SSH 免密登录到所有节点。</p>
+</blockquote>
+<h3 id="6-1-目录结构"><a href="#6-1-目录结构" class="headerlink" title="6.1 目录结构"></a>6.1 目录结构</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ansible_high_availability/</span><br><span class="line">├── inventory.ini</span><br><span class="line">├── site.yml</span><br><span class="line">├── group_vars/</span><br><span class="line">│   └── all.yml</span><br><span class="line">└── roles/</span><br><span class="line">    ├── common/</span><br><span class="line">    ├── mysql/</span><br><span class="line">    ├── web/</span><br><span class="line">    └── lb/</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-2-inventory-ini-示例"><a href="#6-2-inventory-ini-示例" class="headerlink" title="6.2 inventory.ini 示例"></a>6.2 inventory.ini 示例</h3><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[db]</span></span><br><span class="line">db01 <span class="attr">ansible_host</span>=<span class="number">192.168</span>.<span class="number">10.30</span></span><br><span class="line"></span><br><span class="line"><span class="section">[web]</span></span><br><span class="line">web01 <span class="attr">ansible_host</span>=<span class="number">192.168</span>.<span class="number">10.20</span></span><br><span class="line">web02 <span class="attr">ansible_host</span>=<span class="number">192.168</span>.<span class="number">10.21</span></span><br><span class="line"></span><br><span class="line"><span class="section">[lb]</span></span><br><span class="line">lb01 <span class="attr">ansible_host</span>=<span class="number">192.168</span>.<span class="number">10.10</span></span><br><span class="line">lb02 <span class="attr">ansible_host</span>=<span class="number">192.168</span>.<span class="number">10.11</span></span><br><span class="line"></span><br><span class="line"><span class="section">[all:vars]</span></span><br><span class="line"><span class="attr">ansible_user</span>=root</span><br><span class="line"><span class="attr">ansible_ssh_private_key_file</span>=~/.ssh/id_rsa</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-3-一键部署命令"><a href="#6-3-一键部署命令" class="headerlink" title="6.3 一键部署命令"></a>6.3 一键部署命令</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ansible-playbook -i inventory.ini site.yml</span><br></pre></td></tr></table></figure>
+
+<h2 id="7-故障排查记录（常见问题）"><a href="#7-故障排查记录（常见问题）" class="headerlink" title="7. 故障排查记录（常见问题）"></a>7. 故障排查记录（常见问题）</h2><table>
+<thead>
+<tr>
+<th>现象</th>
+<th>可能原因</th>
+<th>解决方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>访问 VIP 出现 502 Bad Gateway</td>
+<td>PHP-FPM 未启动或 Nginx 配置错误</td>
+<td>检查 php-fpm 状态，查看 Nginx error log</td>
+</tr>
+<tr>
+<td>Keepalived VIP 不切换</td>
+<td>防火墙阻止 VRRP 协议</td>
+<td>关闭防火墙或允许协议 112</td>
+</tr>
+<tr>
+<td>后端 Web 节点无法连接 MySQL</td>
+<td>数据库权限未正确设置</td>
+<td>在 db01 上执行 <code>GRANT</code> 并 <code>FLUSH PRIVILEGES</code></td>
+</tr>
+<tr>
+<td>Ansible 连接失败</td>
+<td>SSH 密钥未配置或 hosts 解析错误</td>
+<td>用 <code>ansible all -m ping</code> 测试</td>
+</tr>
+</tbody></table>
+<h2 id="8-项目成果总结"><a href="#8-项目成果总结" class="headerlink" title="8. 项目成果总结"></a>8. 项目成果总结</h2><ul>
+<li>完成 4 节点高可用 LNMP 环境部署，故障切换时间 &lt; 3 秒  </li>
+<li>通过 Ansible 实现重复部署时间从 1 小时降至 5 分钟  </li>
+<li>编写完整的部署文档和排错手册，可作为标准化实施模板</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://anyi-bb.github.io">anyi</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://anyi-bb.github.io/2025/12/05/%E5%86%85%E9%83%A8-Web-%E6%9C%8D%E5%8A%A1%E9%AB%98%E5%8F%AF%E7%94%A8%E9%83%A8%E7%BD%B2/">https://anyi-bb.github.io/2025/12/05/%E5%86%85%E9%83%A8-Web-%E6%9C%8D%E5%8A%A1%E9%AB%98%E5%8F%AF%E7%94%A8%E9%83%A8%E7%BD%B2/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://anyi-bb.github.io" target="_blank">安逸</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/02/05/keepalived%E9%83%A8%E7%BD%B2%E4%B8%8E%E6%A6%82%E5%BF%B5/" title="keepalived部署与概念"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">keepalived部署与概念</div></div><div class="info-2"><div class="info-item-1">一句话：Keepalived 让两台机器共用同一个虚拟 IP（VIP），主挂了备自动顶上。  1. 安装（主备都做）1yum install -y keepalived  2. 配置主服务器（MASTER）1vim /etc/keepalived/keepalived.conf 1234567891011121314vrrp_instance VI_1 &#123;    state MASTER    interface eth0          # 改你的网卡名    virtual_router_id 51    priority 100            # 主优先级高    advert_int 1    authentication &#123;        auth_type PASS        auth_pass 123456    &#125;    virtual_ipaddress &#123;        192.168.1.100/24    # 虚拟IP（VIP）    &#125;&#125;  3. 配置备服务器（BACKUP）123...</div></div></div></a><a class="pagination-related" href="/2025/12/05/mysql%E6%9C%8D%E5%8A%A1%E8%AF%AD%E5%8F%A5%E5%BA%94%E7%94%A8/" title="mysql主从配置"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">mysql主从配置</div></div><div class="info-2"><div class="info-item-1">环境假设 主库 IP：192.168.10.30 从库 IP：192.168.10.31 操作系统：CentOS 7 &#x2F; Ubuntu 20.04 MySQL 版本：5.7 或 8.0   第一步：主库配置1.1 修改主库配置文件 /etc/my.cnf（或 /etc/mysql/my.cnf）1234567891011121314[mysqld]# 开启二进制日志log-bin = mysql-bin# 服务器ID，主从集群内唯一server-id = 1# 要同步的数据库（可选，不写则同步所有）binlog-do-db = your_db# 忽略同步的数据库（可选）binlog-ignore-db = mysql# binlog 格式（推荐 ROW）binlog-format = ROW# 过期清理时间（7天）expire-logs-days = 7  1.2 重启 MySQL12systemctl restart mysqld  1.3 创建用于复制的专用用户1234CREATE USER &#x27;repl&#x27;@&#x27;192.168.10.%&#...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">anyi</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">17</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://www.deepseek.com"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E9%A1%B9%E7%9B%AE%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">1. 项目概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E7%A1%AC%E4%BB%B6%E7%8E%AF%E5%A2%83"><span class="toc-number">2.</span> <span class="toc-text">2. 硬件环境</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%A7%84%E5%88%92%EF%BC%88%E4%BD%BF%E7%94%A8-VMware-Workstation-%E6%88%96-VirtualBox%EF%BC%89"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 虚拟机规划（使用 VMware Workstation 或 VirtualBox）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E8%BD%AF%E4%BB%B6%E7%8E%AF%E5%A2%83%E5%8F%8A%E7%89%88%E6%9C%AC"><span class="toc-number">3.</span> <span class="toc-text">3. 软件环境及版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E7%BD%91%E7%BB%9C%E6%8B%93%E6%89%91"><span class="toc-number">4.</span> <span class="toc-text">4. 网络拓扑</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E9%83%A8%E7%BD%B2%E6%AD%A5%E9%AA%A4%EF%BC%88%E6%89%8B%E5%8A%A8%E7%89%88%EF%BC%8C%E4%BE%9B%E7%90%86%E8%A7%A3%E6%B5%81%E7%A8%8B%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">5. 部署步骤（手动版，供理解流程）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E5%9F%BA%E7%A1%80%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87%EF%BC%88%E6%89%80%E6%9C%89%E8%8A%82%E7%82%B9%E6%89%A7%E8%A1%8C%EF%BC%89"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 基础环境准备（所有节点执行）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E6%95%B0%E6%8D%AE%E5%BA%93%E8%8A%82%E7%82%B9%EF%BC%88db01%EF%BC%89"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 数据库节点（db01）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-Web-%E8%8A%82%E7%82%B9%EF%BC%88web01-web02%EF%BC%89"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 Web 节点（web01, web02）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%8A%82%E7%82%B9%EF%BC%88lb01-lb02%EF%BC%89"><span class="toc-number">5.4.</span> <span class="toc-text">5.4 负载均衡节点（lb01, lb02）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BB%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%99%A8%EF%BC%88lb01%EF%BC%89Keepalived-%E9%85%8D%E7%BD%AE"><span class="toc-number">5.4.1.</span> <span class="toc-text">主负载均衡器（lb01）Keepalived 配置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%87%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%99%A8%EF%BC%88lb02%EF%BC%89%E9%85%8D%E7%BD%AE"><span class="toc-number">5.4.2.</span> <span class="toc-text">备负载均衡器（lb02）配置</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-%E5%90%AF%E5%8A%A8%E9%AB%98%E5%8F%AF%E7%94%A8"><span class="toc-number">5.5.</span> <span class="toc-text">5.5 启动高可用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-6-%E9%AA%8C%E8%AF%81"><span class="toc-number">5.6.</span> <span class="toc-text">5.6 验证</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Ansible-%E8%87%AA%E5%8A%A8%E5%8C%96%E9%83%A8%E7%BD%B2%EF%BC%88%E7%AE%80%E5%8C%96%E7%89%88%EF%BC%89"><span class="toc-number">6.</span> <span class="toc-text">6. Ansible 自动化部署（简化版）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 目录结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-inventory-ini-%E7%A4%BA%E4%BE%8B"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 inventory.ini 示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E4%B8%80%E9%94%AE%E9%83%A8%E7%BD%B2%E5%91%BD%E4%BB%A4"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 一键部署命令</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E6%95%85%E9%9A%9C%E6%8E%92%E6%9F%A5%E8%AE%B0%E5%BD%95%EF%BC%88%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%EF%BC%89"><span class="toc-number">7.</span> <span class="toc-text">7. 故障排查记录（常见问题）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E9%A1%B9%E7%9B%AE%E6%88%90%E6%9E%9C%E6%80%BB%E7%BB%93"><span class="toc-number">8.</span> <span class="toc-text">8. 项目成果总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/02/05/keepalived%E9%83%A8%E7%BD%B2%E4%B8%8E%E6%A6%82%E5%BF%B5/" title="keepalived部署与概念">keepalived部署与概念</a><time datetime="2026-02-05T12:29:05.000Z" title="发表于 2026-02-05 20:29:05">2026-02-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/12/05/%E5%86%85%E9%83%A8-Web-%E6%9C%8D%E5%8A%A1%E9%AB%98%E5%8F%AF%E7%94%A8%E9%83%A8%E7%BD%B2/" title="内部 Web 服务高可用部署">内部 Web 服务高可用部署</a><time datetime="2025-12-05T14:12:48.000Z" title="发表于 2025-12-05 22:12:48">2025-12-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/12/05/mysql%E4%B8%BB%E4%BB%8E%E9%85%8D%E7%BD%AE/" title="mysql主从配置">mysql主从配置</a><time datetime="2025-12-05T12:52:58.000Z" title="发表于 2025-12-05 20:52:58">2025-12-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/12/05/mysql%E6%9C%8D%E5%8A%A1%E8%AF%AD%E5%8F%A5%E5%BA%94%E7%94%A8/" title="mysql主从配置">mysql主从配置</a><time datetime="2025-12-05T12:52:58.000Z" title="发表于 2025-12-05 20:52:58">2025-12-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/12/05/mysql%E5%AD%98%E5%82%A8%E6%9C%8D%E5%8A%A1/" title="mysql存储服务">mysql存储服务</a><time datetime="2025-12-05T12:33:38.000Z" title="发表于 2025-12-05 20:33:38">2025-12-05</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By anyi</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.1</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
